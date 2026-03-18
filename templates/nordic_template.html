@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #FAFAFA;
+            color: #333333;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .email-container {
+            max-width: 640px;
+            margin: 0 auto;
+            background: #FFFFFF;
+        }
+        
+        .header {
+            padding: 48px 40px 32px;
+            text-align: center;
+            background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%);
+        }
+        
+        .header h1 {
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #999999;
+            margin: 0;
+        }
+        
+        .header .divider {
+            width: 40px;
+            height: 1px;
+            background: #E0E0E0;
+            margin: 20px auto;
+        }
+        
+        .hero { width: 100%; position: relative; }
+        .hero img { width: 100%; height: auto; display: block; }
+                
+        .intro { padding: 40px; text-align: center; }
+        .intro p {
+            font-size: 15px;
+            color: #666666;
+            max-width: 480px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+        
+        .custom-greeting {
+            padding: 30px 40px 20px;
+            text-align: left;
+        }
+        
+        .custom-greeting p {
+            font-size: 15px;
+            color: #444444;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            font-weight: 300;
+            margin: 0;
+        }
+        
+        .products { padding: 0 40px 40px; }
+        
+        .product-item { margin-bottom: 48px; page-break-inside: avoid; }
+        
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .product-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        
+        .product-table .photo-col {
+            width: 200px;
+            padding-right: 20px;
+        }
+        
+        .product-table .photo-col img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .product-table .info-col {
+            padding-top: 5px;
+        }
+        
+        .product-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333333;
+            margin-bottom: 4px;
+        }
+        
+        .product-item-no {
+            font-size: 11px;
+            color: #999999;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+        
+        .product-spec { 
+            font-size: 12px; 
+            color: #666666; 
+            margin-bottom: 8px; 
+            font-weight: 300;
+            line-height: 1.5;
+        }
+        
+        .product-details { 
+            font-size: 11px; 
+            color: #888888; 
+            line-height: 1.6; 
+        }
+        .product-details span { display: block; margin-bottom: 2px; }
+        
+        .product-price { 
+            font-size: 15px; 
+            color: #333333; 
+            font-weight: 500; 
+            margin-top: 10px; 
+        }
+        .product-price .currency { 
+            font-size: 12px; 
+            color: #999999; 
+            margin-right: 2px; 
+        }
+        
+        .product-divider { 
+            width: 60px; 
+            height: 1px; 
+            background: #E0E0E0; 
+            margin: 32px auto; 
+        }
+        
+        .footer {
+            background: #FAFAFA;
+            padding: 48px 40px;
+            text-align: center;
+            border-top: 1px solid #F0F0F0;
+        }
+        
+        .brand { 
+            font-size: 22px; 
+            font-weight: 300; 
+            letter-spacing: 6px; 
+            color: #333333; 
+            margin-bottom: 8px; 
+        }
+        .tagline { 
+            font-size: 11px; 
+            letter-spacing: 2px; 
+            color: #999999; 
+            text-transform: uppercase; 
+            margin-bottom: 24px; 
+        }
+        
+        .footer-links { font-size: 11px; color: #BBBBBB; }
+        .footer-links a { color: #999999; text-decoration: none; margin: 0 10px; }
+        
+        .copyright { font-size: 10px; color: #CCCCCC; margin-top: 20px; }
+        
+        @media only screen and (max-width: 640px) {
+            .header { padding: 32px 24px 24px; }
+            .intro { padding: 32px 24px; }
+            .products { padding: 0 24px 32px; }
+            .product-item { margin-bottom: 36px; }
+            .footer { padding: 32px 24px; }
+            .brand { letter-spacing: 4px; }
+            .product-table .photo-col { width: 150px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>{{ title }}</h1>
+            <div class="divider"></div>
+        </div>
+        
+        <!-- Custom Greeting -->
+        {% if custom_greeting %}
+        <div class="custom-greeting">
+            <p>{{ custom_greeting }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Hero Image / Video - Mobile Friendly -->
+        {% if hero_image %}
+        <div class="hero">
+            {% if video_url %}
+            <a href="{{ video_url }}" target="_blank">
+                <img src="{{ hero_image }}" alt="Watch Video" style="width:100%;height:auto;display:block;">
+            </a>
+            {% else %}
+            <img src="{{ hero_image }}" alt="{{ title }}" style="width:100%;height:auto;display:block;">
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Intro -->
+        {% if intro_text %}
+        <div class="intro">
+            <p>{{ intro_text }}</p>
+        </div>
+        {% endif %}
+        
+        <!-- Product Table -->
+        <div class="products">
+            {% for product in products %}
+            <div class="product-item">
+                <table class="product-table">
+                    <tr>
+                        {% if product.images %}
+                        <td class="photo-col">
+                            {% if is_preview %}
+                            <img src="{{ product.preview_src }}" alt="Product Image" style="width:100%; max-width:600px; display:block;">
+                            {% else %}
+                            <img src="{{ product.cid_src }}" alt="Product Image" style="width:100%; max-width:600px; display:block;">
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                        <td class="info-col">
+                            {% if product.item %}<div class="product-item-no">{{ product.item }}</div>{% endif %}
+                            <div class="product-name">{{ product.name or 'Product Name' }}</div>
+                            
+                            {% if product.spec %}
+                            <div class="product-spec">{{ product.spec }}</div>
+                            {% endif %}
+                            
+                            <div class="product-details">
+                                {% if product.material %}<span>Material: {{ product.material }}</span>{% endif %}
+                                {% if product.size %}<span>Size: {{ product.size }}</span>{% endif %}
+                                {% if product.packing %}<span>Packing: {{ product.packing }}</span>{% endif %}
+                                {% if product.cbm %}<span>CBM: {{ product.cbm }}</span>{% endif %}
+                                {% if product.moq %}<span>MOQ: {{ product.moq }}</span>{% endif %}
+                            </div>
+                            
+                            {% if product.price %}
+                            <div class="product-price">
+                                <span class="currency">$</span>{{ product.price }}
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            {% if not loop.last %}
+            <div class="product-divider"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        
+        <!-- Footer - linklife -->
+        <div class="footer">
+            <div class="brand">linklife</div>
+            <div class="tagline">Premium Sourcing Solutions</div>
+            <div class="footer-links">
+                <a href="#">Unsubscribe</a>
+                <a href="#">Contact</a>
+                <a href="#">Website</a>
+            </div>
+            <div class="copyright">
+                &copy; 2024 linklife. All rights reserved.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
