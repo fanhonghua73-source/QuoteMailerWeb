@@ -393,13 +393,11 @@ def send_email():
         if not project_name:
             return jsonify({'error': '请选择项目'}), 400
         
-        # 测试模式：使用管理员配置的测试收件人
+        # 测试模式：使用全局测试发件箱，但收件人仍是真实的客户邮箱
         if is_test:
-            test_recipient = os.getenv('TEST_RECIPIENT')
-            if not test_recipient:
-                return jsonify({'error': '管理员未配置测试收件人 (TEST_RECIPIENT)'}), 400
-            to_email = test_recipient
-            print(f"[API] 测试模式：发送到 {to_email}")
+            if not to_email:
+                return jsonify({'error': '请输入客户邮箱'}), 400
+            print(f"[API] 测试模式：使用全局发件箱，发送到 {to_email}")
         elif not to_email:
             return jsonify({'error': '请输入收件人'}), 400
         

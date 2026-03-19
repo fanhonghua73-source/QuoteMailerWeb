@@ -353,18 +353,25 @@
             });
         }
         
-        // ========== 系统测试发信（使用管理员配置的测试收件人）==========
+        // ========== 系统测试发信（使用管理员配置的全局发件箱）==========
         function testSend() {
+            const email = document.getElementById('toEmail').value.trim();
+            if (!email) {
+                alert('请输入客户邮箱');
+                return;
+            }
+            
             const btn = event.target;
             btn.disabled = true;
             btn.textContent = '发送中...';
             
-            // 不传 to_email 和 smtp 信息，后端会使用 TEST_RECIPIENT 和 .env SMTP 配置
+            // 传递客户邮箱，后端使用全局发件箱发送
             fetch('/api/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     project_name: currentProject.name,
+                    to_email: email,
                     custom_greeting: document.getElementById('customGreeting').value,
                     is_test: true  // 标记为测试发送
                 })
@@ -372,7 +379,7 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showStatus('测试邮件已发送到管理员配置的测试邮箱');
+                    showStatus('测试邮件已发送（使用全局发件箱）');
                 } else {
                     alert('发送失败: ' + (data.error || '未知错误'));
                 }
