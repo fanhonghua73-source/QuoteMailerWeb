@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuoteMailer - 邮件发送平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', 'Microsoft YaHei', sans-serif; }
+        
+        /* 网格布局 */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .project-card.selected {
+            ring: 3px solid #2563eb;
+            box-shadow: 0 0 0 3px #2563eb;
+        }
+        
+        .card-cover {
+            height: 160px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        
+        .card-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .card-body {
+            padding: 16px;
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        
+        /* 弹窗 */
+        .modal-overlay {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- 顶部搜索区 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-2xl font-bold text-gray-800">📧 QuoteMailer</h1>
+                    <span class="text-sm text-gray-400">业务员平台</span>
+                </div>
+                <div class="search-box flex-1 max-w-xl ml-8">
+                    <input type="text" id="searchInput" placeholder="🔍 搜索项目名称..." 
+                           class="w-full px-4 py-2 text-lg border-0 focus:outline-none">
+                </div>
+                <a href="/admin" class="text-sm text-gray-500 hover:text-gray-800 ml-4">
+                    ⚙️ 管理后台
+                </a>
+            </div>
+        </div>
+    </header>
+    
+    <!-- 主内容区 -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        
+        <!-- 项目网格 -->
+        <div class="project-grid" id="projectGrid">
+            <!-- 项目卡片会动态加载 -->
+        </div>
+        
+        <!-- 空状态 -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="text-6xl mb-4">📭</div>
+            <h2 class="text-xl text-gray-600">暂无项目</h2>
+            <p class="text-gray-400 mt-2">请联系管理员创建项目</p>
+        </div>
+    </main>
+    
+    <!-- 发送弹窗 -->
+    <div id="sendModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden relative">
+            <!-- 弹窗头部 -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                <button onclick="closeSendModal()" class="absolute top-4 right-4 text-white hover:text-gray-200 text-2xl font-bold">&times;</button>
+                <h3 class="text-xl font-bold text-white">发送邮件</h3>
+                <p class="text-blue-100 text-sm" id="modalProjectName">项目名称</p>
+            </div>
+            
+            <!-- 弹窗内容 -->
+            <div class="p-6 space-y-4">
+                <!-- 项目视频预览 -->
+                <div id="videoPreview" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">📹 项目视频</label>
+                    <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                        <iframe id="videoFrame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+                
+                <!-- 收件人 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">📬 客户邮箱 *</label>
+                    <input type="email" id="toEmail" placeholder="client@company.com" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
+                </div>
+                
+                <!-- 专属问候语 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">💬 专属问候语</label>
+                    <textarea id="customGreeting" rows="2" placeholder="例如: Hi John, 结合贵司需求..." 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none resize-none"></textarea>
+                </div>
+                
+                <hr class="border-gray-200">
+                
+                <!-- 个人发件配置 -->
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <p class="text-sm text-blue-800 mb-3">🔐 您的发件配置（仅保存在本地浏览器）</p>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">发件邮箱</label>
+                            <input type="email" id="senderEmail" placeholder="your@email.com" 
+                                   class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">授权码/密码</label>
+                            <input type="password" id="senderPass" placeholder="邮箱授权码" 
+                                   class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none text-sm">
+                        </div>
+                    </div>
+                    
+                    <label class="flex items-center mt-3 text-xs text-gray-600">
+                        <input type="checkbox" id="rememberMe" checked class="mr-2">
+                        记住我的配置
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 弹窗底部 -->
+            <div class="px-6 py-4 bg-gray-50 flex gap-3">
+                <button id="previewBtn" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition">
+                    预览排版
+                </button>
+                <button id="testSendBtn" class="flex-1 px-4 py-2 border border-orange-300 text-orange-700 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
+                    系统测试
+                </button>
+                <button id="confirmSend" class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition">
+                    正式发送
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 预览弹窗 -->
+    <div id="previewModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-[9999]">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden" style="height: 80vh;">
+            <div class="bg-gray-800 px-6 py-3 flex justify-between items-center">
+                <h3 class="text-white font-semibold">邮件预览</h3>
+                <button id="closePreview" class="text-white hover:text-gray-300 text-xl">&times;</button>
+            </div>
+            <iframe id="previewFrame" class="w-full h-full border-0" sandbox="allow-same-origin"></iframe>
+        </div>
+    </div>
+    
+    <!-- 状态提示 -->
+    <div id="status" class="fixed bottom-6 right-6 hidden px-6 py-3 rounded-lg shadow-lg"></div>
+    
+    <script>
+        // ========== 全局关闭函数 ==========
+        function closeSendModal() {
+            document.getElementById('sendModal').classList.add('hidden');
+            document.getElementById('sendModal').classList.remove('flex');
+        }
+        
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('previewModal').classList.remove('flex');
+        }
+        
+        // ========== 状态 ==========
+        let allProjects = [];
+        let currentProject = null;
+        
+        // ========== DOM 元素 ==========
+        const searchInput = document.getElementById('searchInput');
+        const projectGrid = document.getElementById('projectGrid');
+        const emptyState = document.getElementById('emptyState');
+        
+        const sendModal = document.getElementById('sendModal');
+        const modalProjectName = document.getElementById('modalProjectName');
+        const videoPreview = document.getElementById('videoPreview');
+        const videoFrame = document.getElementById('videoFrame');
+        const toEmail = document.getElementById('toEmail');
+        const customGreeting = document.getElementById('customGreeting');
+        const senderEmail = document.getElementById('senderEmail');
+        const senderPass = document.getElementById('senderPass');
+        const rememberMe = document.getElementById('rememberMe');
+        const confirmSend = document.getElementById('confirmSend');
+        const cancelSend = document.getElementById('cancelSend');
+        const closeSendModal = document.getElementById('closeSendModal');
+        const previewBtn = document.getElementById('previewBtn');
+        const previewModal = document.getElementById('previewModal');
+        const previewFrame = document.getElementById('previewFrame');
+        const closePreview = document.getElementById('closePreview');
+        const testSendBtn = document.getElementById('testSendBtn');
+        
+        // ========== 初始化 ==========
+        loadProjects();
+        loadLocalConfig();
+        
+        // ========== 加载项目列表 ==========
+        async function loadProjects() {
+            try {
+                const resp = await fetch('/api/projects');
+                const data = await resp.json();
+                
+                if (data.success) {
+                    allProjects = data.projects;
+                    renderProjects(allProjects);
+                }
+            } catch (e) {
+                console.error('加载项目失败:', e);
+            }
+        }
+        
+        // ========== 渲染项目网格 ==========
+        function renderProjects(projects) {
+            if (projects.length === 0) {
+                projectGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            projectGrid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            projectGrid.innerHTML = projects.map(p => {
+                // 获取封面图
+                let coverContent = '📊';
+                let coverStyle = 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);';
+                
+                if (p.config && p.config.hero_image) {
+                    coverContent = `<img src="${p.config.hero_image}" alt="${p.name}" onerror="this.parentElement.innerHTML='📊';this.parentElement.style='${coverStyle}'">`;
+                    coverStyle = '';
+                }
+                
+                return `
+                    <div class="project-card" data-name="${p.name}">
+                        <div class="card-cover" style="${coverStyle}">${coverContent}</div>
+                        <div class="card-body">
+                            <h3 class="font-semibold text-gray-800 truncate">${p.name}</h3>
+                            <p class="text-sm text-gray-500 mt-1">
+                                ${p.has_quote ? '✓ 已配置报价单' : '✗ 未配置'}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 绑定点击事件
+            document.querySelectorAll('.project-card').forEach(card => {
+                card.addEventListener('click', () => openSendModal(card.dataset.name));
+            });
+        }
+        
+        // ========== 搜索功能 ==========
+        searchInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase().trim();
+            
+            if (!keyword) {
+                renderProjects(allProjects);
+                return;
+            }
+            
+            const filtered = allProjects.filter(p => 
+                p.name.toLowerCase().includes(keyword)
+            );
+            renderProjects(filtered);
+        });
+        
+        // ========== 打开发送弹窗 ==========
+        async function openSendModal(projectName) {
+            try {
+                const resp = await fetch(`/api/projects/${projectName}`);
+                const data = await resp.json();
+                
+                if (!data.success) {
+                    showStatus('项目不存在', true);
+                    return;
+                }
+                
+                currentProject = data.project;
+                
+                // 设置弹窗内容
+                modalProjectName.textContent = currentProject.name;
+                
+                // 视频预览
+                if (currentProject.config && currentProject.config.video_url) {
+                    videoPreview.classList.remove('hidden');
+                    videoFrame.src = currentProject.config.video_url;
+                } else {
+                    videoPreview.classList.add('hidden');
+                }
+                
+                // 重置表单
+                toEmail.value = '';
+                customGreeting.value = currentProject.config?.greeting || '';
+                
+                // 显示弹窗
+                sendModal.classList.remove('hidden');
+                sendModal.classList.add('flex');
+                
+            } catch (e) {
+                showStatus('加载项目失败: ' + e.message, true);
+            }
+        }
+        
+        // ========== 关闭弹窗 ==========
+        cancelSend.addEventListener('click', () => {
+            sendModal.classList.add('hidden');
+            sendModal.classList.remove('flex');
+        });
+        
+        // 右上角关闭按钮
+        closeSendModal.addEventListener('click', () => {
+            sendModal.classList.add('hidden');
+            sendModal.classList.remove('flex');
+        });
+        
+        // 点击遮罩层关闭
+        sendModal.addEventListener('click', (e) => {
+            if (e.target === sendModal) {
+                sendModal.classList.add('hidden');
+                sendModal.classList.remove('flex');
+            }
+        });
+        
+        // ========== 预览排版 ==========
+        previewBtn.addEventListener('click', async () => {
+            if (!currentProject) {
+                alert('请先选择项目');
+                return;
+            }
+            
+            if (!currentProject.has_quote) {
+                alert('该项目未上传报价单');
+                return;
+            }
+            
+            previewBtn.disabled = true;
+            previewBtn.textContent = '生成中...';
+            
+            try {
+                const resp = await fetch('/api/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        project_name: currentProject.name,
+                        custom_greeting: customGreeting.value.trim()
+                    })
+                });
+                
+                const data = await resp.json();
+                
+                if (data.success) {
+                    // 显示预览弹窗
+                    const blob = new Blob([data.html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    previewFrame.src = url;
+                    previewModal.classList.remove('hidden');
+                    previewModal.classList.add('flex');
+                } else {
+                    alert('预览生成失败: ' + (data.error || '未知错误'));
+                }
+            } catch (e) {
+                alert('请求失败: ' + e.message);
+            } finally {
+                previewBtn.disabled = false;
+                previewBtn.textContent = '预览排版';
+            }
+        });
+        
+        // 关闭预览弹窗
+        closePreview.addEventListener('click', () => {
+            previewModal.classList.add('hidden');
+            previewModal.classList.remove('flex');
+        });
+        
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) {
+                previewModal.classList.add('hidden');
+                previewModal.classList.remove('flex');
+            }
+        });
+        
+        // ========== 系统测试发信（不填个人密码，使用管理员配置）==========
+        testSendBtn.addEventListener('click', async () => {
+            const email = toEmail.value.trim();
+            if (!email) {
+                alert('请输入客户邮箱');
+                return;
+            }
+            
+            testSendBtn.disabled = true;
+            testSendBtn.textContent = '发送中...';
+            
+            try {
+                const resp = await fetch('/api/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        project_name: currentProject.name,
+                        to_email: email,
+                        custom_greeting: customGreeting.value.trim()
+                        // 注意：不传 smtp_user 和 smtp_pass，后端会使用 .env 配置
+                    })
+                });
+                
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showStatus('测试邮件已发送（使用系统配置）');
+                } else {
+                    alert('发送失败: ' + (data.error || '未知错误'));
+                }
+            } catch (e) {
+                alert('请求失败: ' + e.message);
+            } finally {
+                testSendBtn.disabled = false;
+                testSendBtn.textContent = '系统测试';
+            }
+        });
+        
+        // ========== 发送邮件（正式发送）==========
+        confirmSend.addEventListener('click', async () => {
+            const email = toEmail.value.trim();
+            if (!email) {
+                alert('请输入客户邮箱');
+                return;
+            }
+            
+            const smtp_user = senderEmail.value.trim();
+            const smtp_pass = senderPass.value.trim();
+            
+            if (!smtp_user || !smtp_pass) {
+                alert('请填写您的发件邮箱和授权码');
+                return;
+            }
+            
+            // 保存配置到 localStorage
+            if (rememberMe.checked) {
+                localStorage.setItem('smtp_user', smtp_user);
+                localStorage.setItem('smtp_pass', smtp_pass);
+            }
+            
+            confirmSend.disabled = true;
+            confirmSend.textContent = '发送中...';
+            
+            try {
+                const resp = await fetch('/api/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        project_name: currentProject.name,
+                        to_email: email,
+                        custom_greeting: customGreeting.value.trim(),
+                        smtp_user: smtp_user,
+                        smtp_pass: smtp_pass
+                    })
+                });
+                
+                const data = await resp.json();
+                
+                if (data.success) {
+                    showStatus('✅ 邮件发送成功!');
+                    sendModal.classList.add('hidden');
+                    sendModal.classList.remove('flex');
+                } else {
+                    alert('发送失败: ' + (data.error || '未知错误'));
+                }
+            } catch (e) {
+                alert('请求失败: ' + e.message);
+            } finally {
+                confirmSend.disabled = false;
+                confirmSend.textContent = '正式发送';
+            }
+        });
+        
+        // ========== localStorage 读取 ==========
+        function loadLocalConfig() {
+            const savedUser = localStorage.getItem('smtp_user');
+            const savedPass = localStorage.getItem('smtp_pass');
+            
+            if (savedUser) senderEmail.value = savedUser;
+            if (savedPass) senderPass.value = savedPass;
+        }
+        
+        // ========== 工具函数 ==========
+        function showStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.classList.remove('hidden', 'bg-green-500', 'text-white', 'bg-red-500');
+            status.classList.add(isError ? 'bg-red-500' : 'bg-green-500', 'text-white');
+            
+            setTimeout(() => {
+                status.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

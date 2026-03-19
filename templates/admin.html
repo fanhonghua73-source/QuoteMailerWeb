@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuoteMailer Web - 管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', 'Microsoft YaHei', sans-serif; }
+        .sidebar { width: 280px; min-width: 280px; background: #1f2937; color: white; height: 100vh; overflow-y: auto; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 2px; }
+        .project-item { padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent; transition: all 0.2s; }
+        .project-item:hover { background: #374151; }
+        .project-item.active { background: #374151; border-left-color: #60a5fa; }
+        .main-content { flex: 1; height: 100vh; overflow-y: auto; background: #f9fafb; }
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af; }
+        .upload-zone { border: 2px dashed #d1d5db; border-radius: 12px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-zone:hover { border-color: #2563eb; background: #eff6ff; }
+    </style>
+</head>
+<body class="flex m-0 p-0">
+    <!-- 左侧边栏 -->
+    <aside class="sidebar flex flex-col">
+        <div class="p-4 border-b border-gray-700">
+            <h1 class="text-xl font-bold">QuoteMailer</h1>
+            <p class="text-xs text-gray-400 mt-1">管理后台</p>
+        </div>
+        <div class="p-4 border-b border-gray-700">
+            <div class="flex gap-2">
+                <input type="text" id="newProjectName" placeholder="输入项目名称..." class="flex-1 px-3 py-2 rounded bg-gray-700 border border-gray-600 text-white text-sm focus:outline-none focus:border-blue-500">
+                <button onclick="createNewProject()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm font-medium">+ 新建</button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto" id="projectList">
+            <div class="p-4 text-center text-gray-400">加载中...</div>
+        </div>
+        
+        <!-- 全局测试发件箱配置 -->
+        <div class="p-3 border-t border-gray-700 bg-gray-800">
+            <p class="text-xs text-gray-400 mb-2">全局测试发件箱</p>
+            <div class="space-y-2">
+                <input type="email" id="globalSmtpUser" placeholder="发件邮箱" class="w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs">
+                <input type="password" id="globalSmtpPass" placeholder="授权码" class="w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs">
+                <div class="flex gap-1">
+                    <button onclick="saveGlobalSettings()" class="flex-1 px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-white text-xs">保存</button>
+                    <button onclick="testGlobalSettings()" class="px-2 py-1 bg-orange-600 hover:bg-orange-700 rounded text-white text-xs">测试</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-3 border-t border-gray-700 text-xs text-gray-500">共 <span id="projectCount">0</span> 个项目</div>
+    </aside>
+    
+    <!-- 右侧主内容区 -->
+    <main class="main-content flex flex-col">
+        <div class="empty-state" id="emptyState">
+            <div class="text-6xl mb-4">📁</div>
+            <h2 class="text-xl font-medium mb-2">请选择或创建项目</h2>
+        </div>
+        
+        <div class="hidden flex-col h-full" id="projectDetail">
+            <header class="bg-white border-b px-6 py-4">
+                <h2 class="text-2xl font-bold text-gray-800" id="currentProjectName">项目名称</h2>
+                <p class="text-sm text-gray-500 mt-1"><span id="hasConfig">✓</span> 已配置 | <span id="hasQuote">✗</span> 未上传报价单</p>
+            </header>
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">1. 上传报价单 (Excel)</h3>
+                        <div class="upload-zone">
+                            <input type="file" id="quoteFile" accept=".xlsx,.xls" class="hidden" onchange="uploadQuote(this)">
+                            <label for="quoteFile" class="cursor-pointer">
+                                <div class="text-4xl mb-2">📊</div>
+                                <p class="text-gray-600" id="uploadLabel">点击选择 Excel 文件</p>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">2. 项目配置</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">主图链接</label><input type="url" id="heroImage" placeholder="https://..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">视频链接</label><input type="url" id="videoUrl" placeholder="https://youtube.com/..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">专属问候语</label><textarea id="greeting" rows="3" placeholder="Hi John,..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea></div>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="saveConfig()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg">💾 保存配置</button>
+                        <button id="previewBtn" onclick="generatePreview()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg">✨ 生成预览</button>
+                    </div>
+                    <div class="mt-3">
+                        <button onclick="deleteProject()" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg">🗑 删除项目</button>
+                    </div>
+                    <div id="status" class="hidden p-4 rounded-lg"></div>
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="bg-gray-100 px-6 py-3 border-b"><h3 class="font-medium text-gray-800">预览效果</h3></div>
+                        <iframe id="previewFrame" class="w-full h-[500px] border-0"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        let currentProject = null;
+        
+        // 页面加载时获取项目列表和全局设置
+        window.onload = function() {
+            console.log('[Admin] 页面加载完成');
+            loadProjects();
+            loadGlobalSettings();
+        };
+        
+        // 加载全局设置
+        function loadGlobalSettings() {
+            fetch('/api/settings')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.settings) {
+                        document.getElementById('globalSmtpUser').value = data.settings.smtp_user || '';
+                    }
+                });
+        }
+        
+        // 保存全局设置
+        function saveGlobalSettings() {
+            const smtp_user = document.getElementById('globalSmtpUser').value.trim();
+            const smtp_pass = document.getElementById('globalSmtpPass').value;
+            
+            if (!smtp_user || !smtp_pass) {
+                alert('请填写完整的发件邮箱和授权码');
+                return;
+            }
+            
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ smtp_user, smtp_pass })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('全局发件箱配置已保存');
+                    document.getElementById('globalSmtpPass').value = '';
+                } else {
+                    alert(data.error || '保存失败');
+                }
+            });
+        }
+        
+        // 测试全局设置
+        function testGlobalSettings() {
+            const email = prompt('请输入测试收件人邮箱:');
+            if (!email) return;
+            
+            fetch('/api/settings/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to_email: email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('测试邮件发送成功！');
+                } else {
+                    alert('发送失败: ' + (data.error || '未知错误'));
+                }
+            });
+        }
+        
+        function loadProjects() {
+            console.log('[Admin] 加载项目列表...');
+            const listContainer = document.getElementById('projectList');
+            const countEl = document.getElementById('projectCount');
+            
+            fetch('/api/projects')
+                .then(res => res.json())
+                .then(data => {
+                    console.log('[Admin] 项目数据:', data);
+                    if (!data.success) {
+                        listContainer.innerHTML = '<div class="p-4 text-center text-red-400">加载失败</div>';
+                        return;
+                    }
+                    const projects = data.projects;
+                    countEl.textContent = projects.length;
+                    
+                    if (projects.length === 0) {
+                        listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">暂无项目</div>';
+                        return;
+                    }
+                    
+                    listContainer.innerHTML = '';
+                    projects.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'project-item';
+                        div.dataset.name = p.name;
+                        div.onclick = function() { loadProjectDetail(this.dataset.name); };
+                        div.innerHTML = '<div class="font-medium">' + p.name + '</div><div class="text-xs text-gray-400 mt-1">' + (p.has_quote ? '✓ 已上传报价单' : '✗ 未上传报价单') + '</div>';
+                        listContainer.appendChild(div);
+                    });
+                })
+                .catch(err => {
+                    console.error('[Admin] 加载失败:', err);
+                    listContainer.innerHTML = '<div class="p-4 text-center text-red-400">加载错误</div>';
+                });
+        }
+        
+        function loadProjectDetail(name) {
+            console.log('[Admin] 加载项目详情:', name);
+            fetch('/api/projects/' + name)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        currentProject = data.project;
+                        showProjectDetail(data.project);
+                    }
+                });
+        }
+        
+        function showProjectDetail(project) {
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('projectDetail').classList.remove('hidden');
+            document.getElementById('projectDetail').classList.add('flex');
+            
+            document.getElementById('currentProjectName').textContent = project.name;
+            
+            // 正确显示配置状态
+            document.getElementById('hasConfig').textContent = project.has_config ? '✓' : '✗';
+            
+            // 正确显示报价单状态 - 使用条件判断
+            const quoteEl = document.getElementById('hasQuote');
+            if (project.has_quote) {
+                quoteEl.textContent = '✓ 已上传报价单';
+                quoteEl.className = 'text-green-500';
+            } else {
+                quoteEl.textContent = '✗ 未上传报价单';
+                quoteEl.className = 'text-red-500';
+            }
+            
+            if (project.config) {
+                document.getElementById('heroImage').value = project.config.hero_image || '';
+                document.getElementById('videoUrl').value = project.config.video_url || '';
+                document.getElementById('greeting').value = project.config.greeting || '';
+            }
+            
+            // 更新左侧选中状态
+            document.querySelectorAll('.project-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.name === project.name);
+            });
+        }
+        
+        function createNewProject() {
+            const name = document.getElementById('newProjectName').value.trim();
+            if (!name) { alert('请输入项目名称'); return; }
+            
+            fetch('/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('newProjectName').value = '';
+                    loadProjects();
+                    loadProjectDetail(data.name);
+                } else {
+                    alert(data.error || '创建失败');
+                }
+            });
+        }
+        
+        // 删除项目
+        function deleteProject() {
+            if (!currentProject) return;
+            
+            if (!confirm('确定要永久删除项目 "' + currentProject.name + '" 吗？此操作不可恢复！')) {
+                return;
+            }
+            
+            if (!confirm('再次确认：删除后所有数据将被永久删除！')) {
+                return;
+            }
+            
+            fetch('/api/projects/' + currentProject.name, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('项目已删除');
+                    currentProject = null;
+                    document.getElementById('projectDetail').classList.add('hidden');
+                    document.getElementById('projectDetail').classList.remove('flex');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    loadProjects();
+                } else {
+                    alert(data.error || '删除失败');
+                }
+            })
+            .catch(err => {
+                alert('请求失败: ' + err.message);
+            });
+        }
+        
+        function uploadQuote(input) {
+            if (!currentProject || !input.files[0]) return;
+            
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+            
+            fetch('/api/projects/' + currentProject.name + '/quote', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('报价单上传成功');
+                    loadProjects();
+                    loadProjectDetail(currentProject.name);
+                } else {
+                    alert(data.error || '上传失败');
+                }
+            });
+        }
+        
+        function saveConfig() {
+            if (!currentProject) return;
+            
+            const config = {
+                hero_image: document.getElementById('heroImage').value,
+                video_url: document.getElementById('videoUrl').value,
+                greeting: document.getElementById('greeting').value
+            };
+            
+            fetch('/api/projects/' + currentProject.name, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ config })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('配置已保存');
+                    loadProjects();
+                } else {
+                    alert(data.error || '保存失败');
+                }
+            });
+        }
+        
+        function generatePreview() {
+            if (!currentProject) return;
+            
+            document.getElementById('previewBtn').disabled = true;
+            document.getElementById('previewBtn').textContent = '生成中...';
+            
+            fetch('/api/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    project_name: currentProject.name,
+                    custom_greeting: document.getElementById('greeting').value
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('previewFrame').srcdoc = data.html;
+                    showStatus('生成成功 ' + data.product_count + ' 个产品');
+                } else {
+                    alert(data.error || '生成失败');
+                }
+            })
+            .catch(err => {
+                alert('请求失败: ' + err.message);
+            })
+            .finally(() => {
+                document.getElementById('previewBtn').disabled = false;
+                document.getElementById('previewBtn').textContent = '✨ 生成预览';
+            });
+        }
+        
+        function showStatus(msg) {
+            const el = document.getElementById('status');
+            el.textContent = msg;
+            el.classList.remove('hidden', 'bg-red-100', 'bg-green-100');
+            el.classList.add('bg-green-100');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+    </script>
+</body>
+</html>

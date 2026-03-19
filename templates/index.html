@@ -3,305 +3,461 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuoteMailer Web</title>
+    <title>QuoteMailer - 邮件发送平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', 'Microsoft YaHei', sans-serif; }
-        .loading { opacity: 0.6; pointer-events: none; }
+        
+        /* 网格布局 */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .card-cover {
+            height: 160px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        
+        .card-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .card-body {
+            padding: 16px;
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        
+        /* 弹窗 */
+        .modal-overlay {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b">
+    
+    <!-- 顶部搜索区 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-6 py-4">
-            <h1 class="text-2xl font-light text-gray-800 tracking-wider">QuoteMailer <span class="text-sm font-normal text-gray-500">Web Edition</span></h1>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-2xl font-bold text-gray-800">QuoteMailer</h1>
+                    <span class="text-sm text-gray-400">业务员平台</span>
+                </div>
+                <div class="search-box flex-1 max-w-xl ml-8">
+                    <input type="text" id="searchInput" placeholder="搜索项目名称..." 
+                           class="w-full px-4 py-2 text-lg border-0 focus:outline-none">
+                </div>
+                <a href="/admin?password=linklife123" class="text-sm text-gray-500 hover:text-gray-800 ml-4">
+                    管理后台
+                </a>
+            </div>
         </div>
     </header>
-
+    
+    <!-- 主内容区 -->
     <main class="max-w-7xl mx-auto px-6 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            <!-- Left Panel: Controls -->
-            <div class="space-y-6">
-                <!-- File Upload -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-medium text-gray-800 mb-4">1. 上传报价单</h2>
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition" id="dropzone">
-                        <input type="file" id="excelFile" accept=".xlsx,.xls" class="hidden">
-                        <label for="excelFile" class="cursor-pointer">
-                            <div class="text-4xl mb-2">📄</div>
-                            <p class="text-gray-600" id="fileLabel">点击选择 Excel 文件或拖拽至此</p>
-                            <p class="text-sm text-gray-400 mt-1" id="fileName"></p>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Media Config -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-lg font-medium text-gray-800 mb-4">2. 配置内容</h2>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">【主图】动图/图片链接 (选填)</label>
-                            <input type="url" id="heroImage" placeholder="https://example.com/hero.gif" 
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">【视频】完整链接 (选填)</label>
-                            <input type="url" id="videoUrl" placeholder="https://youtube.com/..." 
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">【专属问候/前言】(选填)</label>
-                            <textarea id="greeting" rows="3" placeholder="例如: Hi John, 结合贵司对北欧市场的需求，我特为您企划了以下场景..."
-                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 outline-none resize-none"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex gap-4">
-                    <button id="previewBtn" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        ✨ 生成预览
-                    </button>
-                    <button id="sendBtn" class="flex-1 bg-white border-2 border-gray-800 text-gray-800 font-medium py-3 px-6 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        📧 发送邮件
-                    </button>
-                </div>
-
-                <!-- Status -->
-                <div id="status" class="hidden p-4 rounded-lg"></div>
-            </div>
-
-            <!-- Right Panel: Preview -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="bg-gray-100 px-6 py-3 border-b flex justify-between items-center">
-                    <h2 class="font-medium text-gray-800">预览效果</h2>
-                    <span id="productCount" class="text-sm text-gray-500"></span>
-                </div>
-                <iframe id="previewFrame" class="w-full h-[600px] border-0" sandbox="allow-same-origin"></iframe>
-            </div>
+        <!-- 项目网格 -->
+        <div class="project-grid" id="projectGrid">
+            <div class="text-center text-gray-400 py-20">加载中...</div>
+        </div>
+        
+        <!-- 空状态 -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="text-6xl mb-4">暂无项目</div>
+            <p class="text-gray-400">请联系管理员创建项目</p>
         </div>
     </main>
-
-    <!-- Send Modal -->
-    <div id="sendModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <h3 class="text-lg font-medium text-gray-800 mb-4">发送测试邮件</h3>
+    
+    <!-- 发送弹窗 -->
+    <div id="sendModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden relative flex flex-col" style="max-height: 90vh;">
+            <!-- 弹窗头部 - 固定 -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 flex-shrink-0">
+                <button type="button" onclick="document.getElementById('sendModal').style.display='none'" class="absolute top-3 right-3 text-white hover:text-gray-200 text-2xl font-bold">&times;</button>
+                <h3 class="text-xl font-bold text-white">发送邮件</h3>
+                <p class="text-blue-100 text-sm" id="modalProjectName">项目名称</p>
+            </div>
             
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">邮件服务</label>
-                    <select id="smtpPreset" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                        <option value="gmail">Gmail</option>
-                        <option value="outlook">Outlook</option>
-                        <option value="qq">QQ邮箱</option>
-                        <option value="163">163邮箱</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">SMTP 服务器</label>
-                    <input type="text" id="smtpHost" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">端口</label>
-                        <input type="number" id="smtpPort" value="587" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">发件人</label>
-                        <input type="text" id="fromName" placeholder="Your Name" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+            <!-- 弹窗内容 - 可滚动 -->
+            <div class="p-6 space-y-4 overflow-y-auto flex-1">
+                <!-- 项目视频预览 -->
+                <div id="videoPreview" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">项目视频</label>
+                    <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                        <iframe id="videoFrame" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                     </div>
                 </div>
                 
+                <!-- 收件人 -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">用户名/邮箱</label>
-                    <input type="email" id="smtpUser" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">客户邮箱 *</label>
+                    <input type="email" id="toEmail" placeholder="client@company.com" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none">
                 </div>
                 
+                <!-- 专属问候语 -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">密码/授权码</label>
-                    <input type="password" id="smtpPass" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">专属问候语</label>
+                    <textarea id="customGreeting" rows="2" placeholder="例如: Hi John, 结合贵司需求..." 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none resize-none"></textarea>
                 </div>
                 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">收件人</label>
-                    <input type="email" id="toEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <hr class="border-gray-200">
+                
+                <!-- 个人发件配置 -->
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <p class="text-sm text-blue-800 mb-3">您的发件配置（仅保存在本地浏览器）</p>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">发件邮箱</label>
+                            <input type="email" id="senderEmail" placeholder="your@email.com" 
+                                   class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">授权码/密码</label>
+                            <input type="password" id="senderPass" placeholder="邮箱授权码" 
+                                   class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    
+                    <label class="flex items-center mt-3 text-xs text-gray-600">
+                        <input type="checkbox" id="rememberMe" checked class="mr-2">
+                        记住我的配置
+                    </label>
                 </div>
             </div>
             
-            <div class="flex gap-3 mt-6">
-                <button id="confirmSend" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition">
-                    确认发送
-                </button>
-                <button id="cancelSend" class="flex-1 bg-white border border-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 transition">
+            <!-- 弹窗底部按钮 - 固定 -->
+            <div class="px-6 py-4 bg-gray-50 flex gap-3 flex-shrink-0">
+                <button onclick="closeSendModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100">
                     取消
+                </button>
+                <button onclick="previewLayout()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100">
+                    预览排版
+                </button>
+                <button onclick="testSend()" class="flex-1 px-4 py-2 border border-orange-300 text-orange-700 bg-orange-50 rounded-lg hover:bg-orange-100">
+                    系统测试
+                </button>
+                <button onclick="正式发送()" class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg">
+                    正式发送
                 </button>
             </div>
         </div>
     </div>
-
+    
+    <!-- 预览弹窗 -->
+    <div id="previewModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-[9999]">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden" style="height: 80vh;">
+            <div class="bg-gray-800 px-6 py-3 flex justify-between items-center">
+                <h3 class="text-white font-semibold">邮件预览</h3>
+                <button type="button" onclick="document.getElementById('previewModal').style.display='none'" class="text-white hover:text-gray-300 text-xl">&times;</button>
+            </div>
+            <iframe id="previewFrame" class="w-full h-full border-0" sandbox="allow-same-origin"></iframe>
+        </div>
+    </div>
+    
+    <!-- 状态提示 -->
+    <div id="status" class="fixed bottom-6 right-6 hidden px-6 py-3 rounded-lg shadow-lg"></div>
+    
     <script>
-        // State
-        let sessionId = null;
+        // ========== 全局变量 ==========
+        let allProjects = [];
+        let currentProject = null;
         
-        // Elements
-        const fileInput = document.getElementById('excelFile');
-        const fileLabel = document.getElementById('fileLabel');
-        const fileName = document.getElementById('fileName');
-        const heroImage = document.getElementById('heroImage');
-        const videoUrl = document.getElementById('videoUrl');
-        const greeting = document.getElementById('greeting');
-        const previewBtn = document.getElementById('previewBtn');
-        const sendBtn = document.getElementById('sendBtn');
-        const previewFrame = document.getElementById('previewFrame');
-        const productCount = document.getElementById('productCount');
-        const status = document.getElementById('status');
-        
-        // Modal
-        const sendModal = document.getElementById('sendModal');
-        const smtpPreset = document.getElementById('smtpPreset');
-        const smtpHost = document.getElementById('smtpHost');
-        const smtpPort = document.getElementById('smtpPort');
-        const smtpUser = document.getElementById('smtpUser');
-        const smtpPass = document.getElementById('smtpPass');
-        const fromName = document.getElementById('fromName');
-        const toEmail = document.getElementById('toEmail');
-        
-        // SMTP presets
-        const presets = {
-            gmail: { host: 'smtp.gmail.com', port: 587 },
-            outlook: { host: 'smtp.office365.com', port: 587 },
-            qq: { host: 'smtp.qq.com', port: 587 },
-            163: { host: 'smtp.163.com', port: 587 }
-        };
-        
-        // File selection
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files[0]) {
-                fileLabel.textContent = '已选择:';
-                fileName.textContent = e.target.files[0].name;
-                fileName.classList.add('text-green-600');
-            }
-        });
-        
-        // SMTP preset change
-        smtpPreset.addEventListener('change', () => {
-            const preset = presets[smtpPreset.value];
-            smtpHost.value = preset.host;
-            smtpPort.value = preset.port;
-        });
-        
-        // Init preset
-        smtpPreset.dispatchEvent(new Event('change'));
-        
-        // Show status
-        function showStatus(message, isError = false) {
-            status.textContent = message;
-            status.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-            status.classList.add(isError ? 'bg-red-100' : 'bg-green-100', isError ? 'text-red-800' : 'text-green-800');
-            status.classList.remove('hidden');
+        // ========== 全局关闭函数 ==========
+        function closeSendModal() {
+            document.getElementById('sendModal').classList.add('hidden');
+            document.getElementById('sendModal').classList.remove('flex');
         }
         
-        // Generate Preview
-        previewBtn.addEventListener('click', async () => {
-            if (!fileInput.files[0]) {
-                showStatus('请先上传 Excel 文件', true);
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('previewModal').classList.remove('flex');
+        }
+        
+        // ========== 页面加载完成后执行 ==========
+        window.onload = function() {
+            console.log('[Sales] 页面加载完成');
+            loadProjects();
+            loadLocalConfig();
+        };
+        
+        // ========== 加载项目列表 ==========
+        function loadProjects() {
+            console.log('[Sales] 加载项目列表...');
+            const grid = document.getElementById('projectGrid');
+            
+            fetch('/api/projects')
+                .then(res => res.json())
+                .then(data => {
+                    console.log('[Sales] 获取到项目:', data);
+                    if (!data.success) {
+                        grid.innerHTML = '<div class="text-center text-red-400 py-20">加载失败</div>';
+                        return;
+                    }
+                    
+                    allProjects = data.projects;
+                    renderProjects(allProjects);
+                })
+                .catch(err => {
+                    console.error('[Sales] 加载失败:', err);
+                    grid.innerHTML = '<div class="text-center text-red-400 py-20">加载错误</div>';
+                });
+        }
+        
+        // ========== 渲染项目网格 ==========
+        function renderProjects(projects) {
+            const grid = document.getElementById('projectGrid');
+            const empty = document.getElementById('emptyState');
+            
+            if (projects.length === 0) {
+                grid.classList.add('hidden');
+                empty.classList.remove('hidden');
                 return;
             }
             
-            previewBtn.disabled = true;
-            previewBtn.textContent = '处理中...';
+            grid.classList.remove('hidden');
+            empty.classList.add('hidden');
             
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('hero_image', heroImage.value);
-            formData.append('video_url', videoUrl.value);
-            formData.append('greeting', greeting.value);
-            
-            try {
-                const resp = await fetch('/api/preview', {
-                    method: 'POST',
-                    body: formData
-                });
+            let html = '';
+            projects.forEach(p => {
+                // 获取封面图
+                let coverContent = '';
+                let coverStyle = 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);';
                 
-                const data = await resp.json();
-                
-                if (data.success) {
-                    sessionId = data.session_id;
-                    productCount.textContent = `${data.product_count} 个产品`;
-                    
-                    // Display preview
-                    const blob = new Blob([data.html], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    previewFrame.src = url;
-                    
-                    sendBtn.disabled = false;
-                    showStatus(`✅ 生成成功! ${data.product_count} 个产品`);
-                } else {
-                    showStatus('错误: ' + data.error, true);
+                if (p.config && p.config.hero_image) {
+                    coverContent = '<img src="' + p.config.hero_image + '" alt="' + p.name + '" onerror="this.style.display=\'none\'">';
+                    coverStyle = '';
                 }
-            } catch (e) {
-                showStatus('请求失败: ' + e.message, true);
-            } finally {
-                previewBtn.disabled = false;
-                previewBtn.textContent = '✨ 生成预览';
+                
+                html += '<div class="project-card" onclick="openSendModal(\'' + p.name + '\')">' +
+                    '<div class="card-cover" style="' + coverStyle + '">' + (coverContent || '📊') + '</div>' +
+                    '<div class="card-body">' +
+                    '<h3 class="font-semibold text-gray-800 truncate">' + p.name + '</h3>' +
+                    '<p class="text-sm text-gray-500 mt-1">' + (p.has_quote ? '✓ 已配置报价单' : '✗ 未配置') + '</p>' +
+                    '</div></div>';
+            });
+            
+            grid.innerHTML = html;
+        }
+        
+        // ========== 搜索功能 ==========
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const keyword = e.target.value.toLowerCase().trim();
+            if (!keyword) {
+                renderProjects(allProjects);
+                return;
             }
+            const filtered = allProjects.filter(p => p.name.toLowerCase().includes(keyword));
+            renderProjects(filtered);
         });
         
-        // Open send modal
-        sendBtn.addEventListener('click', () => {
-            sendModal.classList.remove('hidden');
-            sendModal.classList.add('flex');
-        });
+        // ========== 打开发送弹窗 ==========
+        function openSendModal(projectName) {
+            console.log('[Sales] 打开项目:', projectName);
+            fetch('/api/projects/' + projectName)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        showStatus('项目不存在', true);
+                        return;
+                    }
+                    
+                    currentProject = data.project;
+                    
+                    // 设置弹窗内容
+                    document.getElementById('modalProjectName').textContent = currentProject.name;
+                    
+                    // 视频预览
+                    if (currentProject.config && currentProject.config.video_url) {
+                        document.getElementById('videoPreview').classList.remove('hidden');
+                        document.getElementById('videoFrame').src = currentProject.config.video_url;
+                    } else {
+                        document.getElementById('videoPreview').classList.add('hidden');
+                    }
+                    
+                    // 回显问候语
+                    document.getElementById('customGreeting').value = currentProject.config?.greeting || '';
+                    
+                    // 显示弹窗
+                    document.getElementById('sendModal').style.display = 'flex';
+                });
+        }
         
-        // Close modal
-        document.getElementById('cancelSend').addEventListener('click', () => {
-            sendModal.classList.add('hidden');
-            sendModal.classList.remove('flex');
-        });
+        // ========== 预览排版 ==========
+        function previewLayout() {
+            if (!currentProject) {
+                alert('请先选择项目');
+                return;
+            }
+            
+            if (!currentProject.has_quote) {
+                alert('该项目未上传报价单');
+                return;
+            }
+            
+            const greeting = document.getElementById('customGreeting').value;
+            
+            fetch('/api/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_name: currentProject.name,
+                    custom_greeting: greeting
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // 显示预览弹窗
+                    document.getElementById('previewFrame').srcdoc = data.html;
+                    document.getElementById('previewModal').style.display = 'flex';
+                } else {
+                    alert('预览生成失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(err => {
+                alert('请求失败: ' + err.message);
+            });
+        }
         
-        // Confirm send
-        document.getElementById('confirmSend').addEventListener('click', async () => {
-            const btn = document.getElementById('confirmSend');
+        // ========== 系统测试发信（使用管理员配置的测试收件人）==========
+        function testSend() {
+            const btn = event.target;
             btn.disabled = true;
             btn.textContent = '发送中...';
             
-            try {
-                const resp = await fetch('/api/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        session_id: sessionId,
-                        smtp_host: smtpHost.value,
-                        smtp_port: parseInt(smtpPort.value),
-                        smtp_user: smtpUser.value,
-                        smtp_pass: smtpPass.value,
-                        from_name: fromName.value || 'QuoteMailer',
-                        to_email: toEmail.value
-                    })
-                });
-                
-                const data = await resp.json();
-                
+            // 不传 to_email 和 smtp 信息，后端会使用 TEST_RECIPIENT 和 .env SMTP 配置
+            fetch('/api/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_name: currentProject.name,
+                    custom_greeting: document.getElementById('customGreeting').value,
+                    is_test: true  // 标记为测试发送
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
                 if (data.success) {
-                    showStatus('✅ 邮件发送成功!');
-                    sendModal.classList.add('hidden');
-                    sendModal.classList.remove('flex');
+                    showStatus('测试邮件已发送到管理员配置的测试邮箱');
                 } else {
-                    showStatus('发送失败: ' + data.error, true);
+                    alert('发送失败: ' + (data.error || '未知错误'));
                 }
-            } catch (e) {
-                showStatus('请求失败: ' + e.message, true);
-            } finally {
+            })
+            .catch(err => {
+                alert('请求失败: ' + err.message);
+            })
+            .finally(() => {
                 btn.disabled = false;
-                btn.textContent = '确认发送';
+                btn.textContent = '系统测试';
+            });
+        }
+        
+        // ========== 正式发送 ==========
+        function 正式发送() {
+            const email = document.getElementById('toEmail').value.trim();
+            if (!email) {
+                alert('请输入客户邮箱');
+                return;
             }
-        });
+            
+            const smtp_user = document.getElementById('senderEmail').value.trim();
+            const smtp_pass = document.getElementById('senderPass').value.trim();
+            
+            if (!smtp_user || !smtp_pass) {
+                alert('请填写您的发件邮箱和授权码');
+                return;
+            }
+            
+            // 保存到 localStorage
+            if (document.getElementById('rememberMe').checked) {
+                localStorage.setItem('smtp_user', smtp_user);
+                localStorage.setItem('smtp_pass', smtp_pass);
+            }
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '发送中...';
+            
+            fetch('/api/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_name: currentProject.name,
+                    to_email: email,
+                    custom_greeting: document.getElementById('customGreeting').value,
+                    smtp_user: smtp_user,
+                    smtp_pass: smtp_pass
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('邮件发送成功!');
+                    closeSendModal();
+                } else {
+                    alert('发送失败: ' + (data.error || '未知错误'));
+                }
+            })
+            .catch(err => {
+                alert('请求失败: ' + err.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = '正式发送';
+            });
+        }
+        
+        // ========== localStorage 读取 ==========
+        function loadLocalConfig() {
+            const savedUser = localStorage.getItem('smtp_user');
+            const savedPass = localStorage.getItem('smtp_pass');
+            
+            if (savedUser) document.getElementById('senderEmail').value = savedUser;
+            if (savedPass) document.getElementById('senderPass').value = savedPass;
+        }
+        
+        // ========== 工具函数 ==========
+        function showStatus(message, isError) {
+            const el = document.getElementById('status');
+            el.textContent = message;
+            el.classList.remove('hidden', 'bg-red-500', 'bg-green-500');
+            el.classList.add(isError ? 'bg-red-500' : 'bg-green-500', 'text-white');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
     </script>
 </body>
 </html>
