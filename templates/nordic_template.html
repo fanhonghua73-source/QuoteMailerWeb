@@ -220,21 +220,76 @@
         </div>
         {% endif %}
         
-        <!-- Product Table -->
+        <!-- Product Table - Multi Image Gallery -->
         <div class="products">
             {% for product in products %}
             <div class="product-item">
-                <table class="product-table">
+                <!-- Multi Image Gallery: 1大+2小 or 并排 -->
+                {% if product.images and product.images|length > 0 %}
+                <table class="product-gallery" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
                     <tr>
-                        {% if product.images %}
-                        <td class="photo-col">
-                            {% if is_preview %}
-                            <img src="{{ product.preview_src }}" alt="Product Image" style="width:100%; max-width:600px; display:block;">
-                            {% else %}
-                            <img src="{{ product.cid_src }}" alt="Product Image" style="width:100%; max-width:600px; display:block;">
+                    {% if product.images|length == 1 %}
+                        <!-- 1张大图: 100% 宽度 -->
+                        <td align="center">
+                            {% if is_preview and product.preview_srcs %}
+                            <img src="{{ product.preview_srcs[0] }}" alt="Product Image" style="width:100%; max-width:560px; display:block;">
+                            {% elif product.cids %}
+                            <img src="cid:{{ product.cids[0] }}" alt="Product Image" style="width:100%; max-width:560px; display:block;">
                             {% endif %}
                         </td>
-                        {% endif %}
+                    {% elif product.images|length == 2 %}
+                        <!-- 2张图: 并排各48% -->
+                        <td width="48%" align="center" valign="top">
+                            {% if is_preview and product.preview_srcs %}
+                            <img src="{{ product.preview_srcs[0] }}" alt="Product Image 1" style="width:100%; max-width:268px; display:block;">
+                            {% elif product.cids %}
+                            <img src="cid:{{ product.cids[0] }}" alt="Product Image 1" style="width:100%; max-width:268px; display:block;">
+                            {% endif %}
+                        </td>
+                        <td width="4%"></td>
+                        <td width="48%" align="center" valign="top">
+                            {% if is_preview and product.preview_srcs %}
+                            <img src="{{ product.preview_srcs[1] }}" alt="Product Image 2" style="width:100%; max-width:268px; display:block;">
+                            {% elif product.cids %}
+                            <img src="cid:{{ product.cids[1] }}" alt="Product Image 2" style="width:100%; max-width:268px; display:block;">
+                            {% endif %}
+                        </td>
+                    {% else %}
+                        <!-- 3张图: 1大(上) + 2小(下) -->
+                        <!-- 大图 -->
+                        <td align="center" style="padding-bottom:8px;">
+                            {% if is_preview and product.preview_srcs %}
+                            <img src="{{ product.preview_srcs[0] }}" alt="Product Image 1" style="width:100%; max-width:560px; display:block;">
+                            {% elif product.cids %}
+                            <img src="cid:{{ product.cids[0] }}" alt="Product Image 1" style="width:100%; max-width:560px; display:block;">
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- 2张小图并排 -->
+                        <td width="48%" align="center" valign="top">
+                            {% if is_preview and product.preview_srcs %}
+                            <img src="{{ product.preview_srcs[1] }}" alt="Product Image 2" style="width:100%; max-width:268px; display:block;">
+                            {% elif product.cids %}
+                            <img src="cid:{{ product.cids[1] }}" alt="Product Image 2" style="width:100%; max-width:268px; display:block;">
+                            {% endif %}
+                        </td>
+                        <td width="4%"></td>
+                        <td width="48%" align="center" valign="top">
+                            {% if is_preview and product.preview_srcs %}
+                            <img src="{{ product.preview_srcs[2] }}" alt="Product Image 3" style="width:100%; max-width:268px; display:block;">
+                            {% elif product.cids %}
+                            <img src="cid:{{ product.cids[2] }}" alt="Product Image 3" style="width:100%; max-width:268px; display:block;">
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                    </tr>
+                </table>
+                {% endif %}
+                
+                <!-- Product Info -->
+                <table class="product-table" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
                         <td class="info-col">
                             {% if product.item %}<div class="product-item-no">{{ product.item }}</div>{% endif %}
                             <div class="product-name">{{ product.name or 'Product Name' }}</div>

@@ -68,8 +68,9 @@ class ExcelParser:
         }
     
     def _build_image_index(self, ws: Worksheet) -> Dict[int, List[str]]:
-        """构建行号到图片的索引"""
+        """构建行号到图片的索引，按列排序"""
         row_images = {}
+        image_positions = []  # [(row, col, path), ...]
         
         if not hasattr(ws, '_images') or not ws._images:
             return row_images
@@ -77,19 +78,26 @@ class ExcelParser:
         for idx, img in enumerate(ws._images):
             try:
                 anchor = img.anchor
-                row = anchor._from.row + 1
+                row = anchor._from.row + 1  # Excel行号从1开始
+                col = anchor._from.col + 1  # Excel列号从1开始
                 
                 filename = self._save_image(img, idx, row)
                 if filename:
-                    # 保存纯净的本地绝对路径
                     abs_path = os.path.abspath(str(self.temp_dir / filename))
-                    if row not in row_images:
-                        row_images[row] = []
-                    row_images[row].append(abs_path)
+                    image_positions.append((row, col, abs_path))
             except Exception as e:
                 print(f"Warning: 跳过图片 {idx}: {e}")
                 continue
         
+        # 按行分组，按列排序
+        image_positions.sort(key=lambda x: (x[0], x[1]))  # 先按行，再按列排序
+        
+        for row, col, path in image_positions:
+            if row not in row_images:
+                row_images[row] = []
+            row_images[row].append(path)
+        
+        print(f"[ExcelParser] 图片索引: {row_images}")
         return row_images
     
     def _save_image(self, img: XLImage, idx: int, row: int) -> Optional[str]:

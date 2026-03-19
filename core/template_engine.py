@@ -75,41 +75,48 @@ class TemplateEngine:
         return html
     
     def _process_products(self, products: list, is_preview: bool) -> list:
-        """处理产品图片"""
+        """处理产品多张图片 - 统一生成 CID"""
         processed = []
         
-        for product in products:
+        for idx, product in enumerate(products):
             p = dict(product)
             images = product.get('images', [])
             
             if images:
+                # 统一生成 CID 列表 - 用于邮件模式
+                cids = []
+                item = product.get('item', f'itm{idx}')
+                for i in range(len(images)):
+                    # 统一格式: img_{item}_{index}
+                    cid_str = f"img_{item}_{i}"
+                    cids.append(cid_str)
+                p['cids'] = cids
+                
                 if is_preview:
-                    # 预览模式：转换为 Base64
-                    img_path = images[0]
-                    print(f"\n[Debug] 正在尝试转换图片: {img_path}")
+                    # 预览模式：转换为 Base64 列表
+                    base64_images = []
+                    for img_path in images:
+                        try:
+                            ext = Path(img_path).suffix.lower()
+                            mime_type = {
+                                '.png': 'image/png',
+                                '.jpg': 'image/jpeg',
+                                '.jpeg': 'image/jpeg',
+                                '.gif': 'image/gif'
+                            }.get(ext, 'image/png')
+                            
+                            with open(img_path, 'rb') as f:
+                                b64_data = base64.b64encode(f.read()).decode('utf-8')
+                            
+                            base64_images.append(f"data:{mime_type};base64,{b64_data}")
+                        except Exception as e:
+                            print(f"[Error] Base64 转换失败: {img_path}, {e}")
+                            base64_images.append("")
                     
-                    try:
-                        # 检测图片类型
-                        ext = Path(img_path).suffix.lower()
-                        mime_type = {
-                            '.png': 'image/png',
-                            '.jpg': 'image/jpeg',
-                            '.jpeg': 'image/jpeg',
-                            '.gif': 'image/gif'
-                        }.get(ext, 'image/png')
-                        
-                        with open(img_path, 'rb') as f:
-                            b64_data = base64.b64encode(f.read()).decode('utf-8')
-                        
-                        p['preview_src'] = f"data:{mime_type};base64,{b64_data}"
-                        print(f"[Debug] 转换成功! Base64 长度: {len(b64_data)}")
-                    except Exception as e:
-                        print(f"[Error] Base64 转换失败! 原因: {str(e)}")
-                        p['preview_src'] = ""
+                    p['preview_srcs'] = base64_images
                 else:
-                    # 邮件模式：使用 CID
-                    item = product.get('item', 'product')
-                    p['cid_src'] = f"cid:{item}_0"
+                    # 邮件模式：使用统一的 cids
+                    pass
             
             processed.append(p)
         

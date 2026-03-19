@@ -457,6 +457,18 @@ def send_email():
         # 业务员可以自定义问候语
         custom_greeting = data.get('custom_greeting') or config.get('greeting') or None
         
+        # 渲染 HTML（邮件模式）
+        html_email = engine.render(
+            products=products,
+            title="Product Quote Proposal",
+            intro_text="Thank you for your interest in our products. Please find our carefully selected product quotes below.",
+            custom_greeting=custom_greeting,
+            hero_image=config.get('hero_image') or None,
+            video_url=config.get('video_url') or None,
+            is_preview=False
+        )
+        
+        # 渲染 HTML（邮件模式）
         html_email = engine.render(
             products=products,
             title="Product Quote Proposal",
@@ -468,16 +480,45 @@ def send_email():
         )
         
         print(f"[API] 发送邮件到: {to_email}, 发件人: {smtp_user}")
+        print(f"[API] assets_dir: {assets_dir}")
         
-        # 发送
+        # ========== 显式构建 cid_image_mapping 列表 ==========
+        cid_image_mapping = []
+        
+        for idx, p in enumerate(products):
+            item_code = p.get('item', f'itm{idx}')
+            images = p.get('images', [])
+            
+            print(f"[API] 产品 {idx}: {item_code}, 图片列表: {images}")
+            
+            for img_idx, img_path in enumerate(images):
+                if img_path:
+                    # 检查物理路径是否存在
+                    if os.path.exists(img_path):
+                        # 使用与 template_engine 统一的 CID 格式: img_{item}_{index}
+                        cid = f"img_{item_code}_{img_idx}"
+                        cid_image_mapping.append((img_path, cid))
+                        print(f"[API]   图片 {img_idx}: {img_path} -> CID: {cid}")
+                    else:
+                        print(f"[警告] 图片物理路径不存在: {img_path}")
+                else:
+                    print(f"[警告] 图片路径为空: {img_path}")
+        
+        # 打印总数让我核对
+        print(f"[API] 准备打包发送的图片总数: {len(cid_image_mapping)}")
+        
+        # 将 cid_image_mapping 传给 mail_sender
         sender = MailSender(smtp_host, smtp_port, smtp_user, smtp_pass)
+        
+        # 动态标题：项目名称 + 品牌
+        email_subject = f"{project_name} - linklife: Premium Sourcing Solutions"
+        
         result = sender.send(
             from_name=from_name,
             to_emails=[to_email],
-            subject="Product Quote Proposal",
+            subject=email_subject,
             html_body=html_email,
-            images_dir=assets_dir,
-            products=products
+            cid_image_mapping=cid_image_mapping  # 传递显式的图片映射
         )
         
         if result['success']:
