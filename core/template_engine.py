@@ -36,7 +36,12 @@ class TemplateEngine:
                video_url: str = None,
                brand: str = None,
                tagline: str = None,
-               is_preview: bool = False) -> str:
+               is_preview: bool = False,
+               main_logo: str = None,
+               sub_logos: list = None,
+               link_contact: str = None,
+               link_website: str = None,
+               copyright_text: str = None) -> str:
         """
         渲染 HTML 邮件
         
@@ -50,8 +55,32 @@ class TemplateEngine:
             brand: 品牌名
             tagline: 品牌标语
             is_preview: True=Base64图片, False=CID (邮件)
+            main_logo: 主 Logo (URL 或本地路径)
+            sub_logos: 子 Logo 列表 (URL 或本地路径)
+            link_contact: 联系页面链接
+            link_website: 官网链接
+            copyright_text: 版权信息
         """
         template = self.env.get_template(self.template_name)
+        
+        # 解析主 Logo 路径（支持本地路径和 URL）
+        resolved_main_logo = self._resolve_image_path(main_logo) if main_logo else None
+        
+        # 解析子 Logo 列表路径
+        resolved_sub_logos = []
+        if sub_logos:
+            for logo_path in sub_logos:
+                if logo_path:
+                    resolved_sub_logos.append(self._resolve_image_path(logo_path))
+        
+        # 打包品牌资产参数
+        brand_kwargs = {
+            'main_logo': resolved_main_logo,
+            'sub_logos': resolved_sub_logos,
+            'link_contact': link_contact,
+            'link_website': link_website,
+            'copyright_text': copyright_text
+        }
         
         # 深拷贝，不污染原数据
         render_products = copy.deepcopy(products)
@@ -69,7 +98,13 @@ class TemplateEngine:
             products=render_products,
             brand=brand or self.DEFAULT_BRAND,
             tagline=tagline or self.DEFAULT_TAGLINE,
-            is_preview=is_preview
+            is_preview=is_preview,
+            # 静默品牌配置
+            main_logo=brand_kwargs.get('main_logo'),
+            sub_logos=brand_kwargs.get('sub_logos'),
+            link_contact=brand_kwargs.get('link_contact'),
+            link_website=brand_kwargs.get('link_website'),
+            copyright_text=brand_kwargs.get('copyright_text')
         )
         
         return html

@@ -31,11 +31,28 @@ DEFAULT_SMTP = {
     'port': int(os.getenv('SMTP_PORT', '587')),
     'user': os.getenv('SMTP_USER', ''),
     'pass': os.getenv('SMTP_PASS', ''),
-    'from_name': os.getenv('SMTP_FROM', 'QuoteMailer')
+    'from_name': os.getenv('SMTP_FROM', 'NINGBO FUTURE')
 }
 
 # 管理员密码
 ADMIN_PASS = os.getenv('ADMIN_PASS', 'admin123')
+
+# ============ 静默全局品牌配置 (不暴露给前端) ============
+# 支持 URL 或本地绝对路径，sub_logos 可以存放多个子品牌图标
+BRAND_ASSETS = {
+    'main_logo': 'https://files.catbox.moe/60x3q1.png',  # 主 Logo (URL 或本地路径)
+    'sub_logos': [  # 子 Logo 列表 (支持多个)
+        'https://files.catbox.moe/lrowca.png',
+        'https://files.catbox.moe/zzybjq.png',
+        'https://files.catbox.moe/4ma01c.png',
+        'https://files.catbox.moe/sttfse.png',
+        'https://files.catbox.moe/0r05x4.png',
+        # 'F:/QuoteMailerWeb/assets/sub2.png'  # 可添加更多
+    ],
+    'link_contact': 'https://www.linkedin.com/in/chaoyu-tong-666b89275?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app',
+    'link_website': 'https://link-int.com',
+    'copyright_text': '2005-2026 linklife. All rights reserved.'
+}
 
 
 # ============ 项目管理辅助函数 ============
@@ -356,7 +373,8 @@ def generate_preview():
             custom_greeting=custom_greeting,
             hero_image=config.get('hero_image') or None,
             video_url=config.get('video_url') or None,
-            is_preview=True
+            is_preview=True,
+            **BRAND_ASSETS
         )
         
         return jsonify({
@@ -457,16 +475,9 @@ def send_email():
         # 业务员可以自定义问候语
         custom_greeting = data.get('custom_greeting') or config.get('greeting') or None
         
-        # 渲染 HTML（邮件模式）
-        html_email = engine.render(
-            products=products,
-            title="Product Quote Proposal",
-            intro_text="Thank you for your interest in our products. Please find our carefully selected product quotes below.",
-            custom_greeting=custom_greeting,
-            hero_image=config.get('hero_image') or None,
-            video_url=config.get('video_url') or None,
-            is_preview=False
-        )
+        # Debug: 打印关键参数
+        print(f"[DEBUG] hero_image: {config.get('hero_image')}")
+        print(f"[DEBUG] main_logo: {BRAND_ASSETS.get('main_logo')}")
         
         # 渲染 HTML（邮件模式）
         html_email = engine.render(
@@ -476,8 +487,15 @@ def send_email():
             custom_greeting=custom_greeting,
             hero_image=config.get('hero_image') or None,
             video_url=config.get('video_url') or None,
-            is_preview=False
+            is_preview=False,
+            **BRAND_ASSETS
         )
+        
+        # Debug: 检查生成的 HTML 中是否包含 hero_image 和 main_logo
+        if html_email and 'hero_image' in str(config.get('hero_image', '')):
+            print("[DEBUG] hero_image 存在于 config 中")
+        if BRAND_ASSETS.get('main_logo'):
+            print(f"[DEBUG] main_logo 已传递: {BRAND_ASSETS.get('main_logo')[:50]}...")
         
         print(f"[API] 发送邮件到: {to_email}, 发件人: {smtp_user}")
         print(f"[API] assets_dir: {assets_dir}")

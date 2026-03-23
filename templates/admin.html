@@ -39,8 +39,32 @@
         <!-- 全局测试发件箱配置 -->
         <div class="p-3 border-t border-gray-700 bg-gray-800">
             <p class="text-xs text-gray-400 mb-2">全局测试发件箱</p>
+            
+            <!-- SMTP 快捷预设 -->
+            <div class="mb-2">
+                <select id="globalSmtpPreset" onchange="applyGlobalSmtpPreset()" class="w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs">
+                    <option value="">请选择快捷预设 / 自定义</option>
+                    <option value="gmail">Gmail</option>
+                    <option value="outlook">Outlook / Office365 / Hotmail</option>
+                    <option value="yahoo">Yahoo</option>
+                    <option value="icloud">Apple iCloud</option>
+                    <option value="qq">QQ 邮箱</option>
+                    <option value="163">网易 163 邮箱</option>
+                    <option value="exmail_qq">企业微信 / 腾讯企业邮</option>
+                    <option value="aliyun">阿里企业邮箱</option>
+                </select>
+            </div>
+            
             <div class="space-y-2">
                 <input type="email" id="globalSmtpUser" placeholder="发件邮箱" class="w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs">
+                <div class="flex gap-1">
+                    <div class="flex-1">
+                        <input type="text" id="globalSmtpHost" placeholder="SMTP 服务器" class="w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs">
+                    </div>
+                    <div class="w-14">
+                        <input type="number" id="globalSmtpPort" placeholder="端口" class="w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs">
+                    </div>
+                </div>
                 <input type="password" id="globalSmtpPass" placeholder="授权码" class="w-full px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs">
                 <div class="flex gap-1">
                     <button onclick="saveGlobalSettings()" class="flex-1 px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-white text-xs">保存</button>
@@ -118,6 +142,8 @@
                 .then(data => {
                     if (data.success && data.settings) {
                         document.getElementById('globalSmtpUser').value = data.settings.smtp_user || '';
+                        document.getElementById('globalSmtpHost').value = data.settings.smtp_host || '';
+                        document.getElementById('globalSmtpPort').value = data.settings.smtp_port || '';
                     }
                 });
         }
@@ -132,10 +158,13 @@
                 return;
             }
             
+            const smtp_host = document.getElementById('globalSmtpHost').value.trim();
+            const smtp_port = document.getElementById('globalSmtpPort').value.trim();
+            
             fetch('/api/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ smtp_user, smtp_pass })
+                body: JSON.stringify({ smtp_user, smtp_pass, smtp_host, smtp_port })
             })
             .then(res => res.json())
             .then(data => {
@@ -147,6 +176,79 @@
                 }
             });
         }
+        
+        // ========== SMTP 快捷预设 (Admin) ==========
+        const globalSmtpPresets = {
+            'gmail': { host: 'smtp.gmail.com', port: 587 },
+            'outlook': { host: 'smtp.office365.com', port: 587 },
+            'yahoo': { host: 'smtp.mail.yahoo.com', port: 587 },
+            'icloud': { host: 'smtp.mail.me.com', port: 587 },
+            'qq': { host: 'smtp.qq.com', port: 465 },
+            '163': { host: 'smtp.163.com', port: 465 },
+            'exmail_qq': { host: 'smtp.exmail.qq.com', port: 465 },
+            'aliyun': { host: 'smtp.qiye.aliyun.com', port: 465 }
+        };
+        
+        // 域名自动检测映射表
+        const globalDomainSmtpMap = {
+            'qq.com': { host: 'smtp.qq.com', port: 465, platform: 'qq' },
+            'foxmail.com': { host: 'smtp.qq.com', port: 465, platform: 'qq' },
+            '163.com': { host: 'smtp.163.com', port: 465, platform: '163' },
+            '126.com': { host: 'smtp.126.com', port: 465, platform: '163' },
+            'gmail.com': { host: 'smtp.gmail.com', port: 587, platform: 'gmail' },
+            'outlook.com': { host: 'smtp.office365.com', port: 587, platform: 'outlook' },
+            'hotmail.com': { host: 'smtp.office365.com', port: 587, platform: 'outlook' },
+            'live.com': { host: 'smtp.office365.com', port: 587, platform: 'outlook' },
+            'yahoo.com': { host: 'smtp.mail.yahoo.com', port: 587, platform: 'yahoo' },
+            'aliyun.com': { host: 'smtp.qiye.aliyun.com', port: 465, platform: 'aliyun' },
+            'exmail.qq.com': { host: 'smtp.exmail.qq.com', port: 465, platform: 'exmail_qq' }
+        };
+        
+        function applyGlobalSmtpPreset() {
+            const preset = document.getElementById('globalSmtpPreset').value;
+            const hostInput = document.getElementById('globalSmtpHost');
+            const portInput = document.getElementById('globalSmtpPort');
+            
+            if (preset && globalSmtpPresets[preset]) {
+                hostInput.value = globalSmtpPresets[preset].host;
+                portInput.value = globalSmtpPresets[preset].port;
+            } else if (preset === '') {
+                hostInput.value = '';
+                portInput.value = '';
+            }
+        }
+        
+        // 监听管理员邮箱输入，自动提取域名并填充 SMTP 配置
+        function autoDetectGlobalSmtpFromEmail() {
+            const email = document.getElementById('globalSmtpUser').value.trim().toLowerCase();
+            const hostInput = document.getElementById('globalSmtpHost');
+            const portInput = document.getElementById('globalSmtpPort');
+            const presetSelect = document.getElementById('globalSmtpPreset');
+            
+            const atIndex = email.indexOf('@');
+            if (atIndex === -1) return;
+            
+            const domain = email.substring(atIndex + 1);
+            
+            if (globalDomainSmtpMap[domain]) {
+                const config = globalDomainSmtpMap[domain];
+                hostInput.value = config.host;
+                portInput.value = config.port;
+                
+                if (config.platform && presetSelect) {
+                    presetSelect.value = config.platform;
+                }
+                console.log('[Admin SMTP] 自动识别: ' + domain + ' -> ' + config.host + ':' + config.port);
+            }
+        }
+        
+        // 页面加载完成后绑定管理员邮箱输入框事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('globalSmtpUser');
+            if (emailInput) {
+                emailInput.addEventListener('blur', autoDetectGlobalSmtpFromEmail);
+            }
+        });
         
         // 测试全局设置
         function testGlobalSettings() {

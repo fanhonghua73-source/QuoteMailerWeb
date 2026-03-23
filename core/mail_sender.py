@@ -28,12 +28,16 @@ class MailSender:
                  smtp_port: int, 
                  username: str, 
                  password: str,
-                 use_tls: bool = True):
+                 use_tls: bool = None):
         self.smtp_host = smtp_host
         self.smtp_port = smtp_port
         self.username = username
         self.password = password
-        self.use_tls = use_tls
+        # 如果未指定 use_tls，则根据端口自动判断：465 用 SSL，其他用 TLS
+        if use_tls is None:
+            self.use_tls = (smtp_port != 465)
+        else:
+            self.use_tls = use_tls
     
     @classmethod
     def from_preset(cls, preset: str, username: str, password: str):
@@ -98,11 +102,21 @@ class MailSender:
             
             # ========== 发送 ==========
             print(f"[MailSender] 准备发送邮件...")
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-                if self.use_tls:
-                    server.starttls()
-                server.login(self.username, self.password)
-                server.send_message(msg_root)
+            print(f"[MailSender] SMTP: {self.smtp_host}:{self.smtp_port}, SSL: {self.smtp_port == 465}")
+            
+            # 端口 465 使用 SMTP_SSL，其他使用 SMTP + starttls
+            if self.smtp_port == 465:
+                # 使用 SSL 连接 (端口 465)
+                with smtplib.SMTP_SSL(self.smtp_host, self.smtp_port) as server:
+                    server.login(self.username, self.password)
+                    server.send_message(msg_root)
+            else:
+                # 使用普通 SMTP + starttls (端口 587 等)
+                with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                    if self.use_tls:
+                        server.starttls()
+                    server.login(self.username, self.password)
+                    server.send_message(msg_root)
             
             print(f"[MailSender] 发送成功!")
             return {'success': True, 'message': f'已发送到 {len(to_emails)} 个收件人'}
