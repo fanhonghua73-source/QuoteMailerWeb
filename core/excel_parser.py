@@ -6,6 +6,7 @@ Excel 解析与图片提取模块 v3
 import os
 import shutil
 import tempfile
+import uuid
 from pathlib import Path
 from typing import Dict, List, Optional
 from openpyxl import load_workbook
@@ -20,10 +21,13 @@ class ExcelParser:
         self.excel_path = excel_path
         self.wb = load_workbook(excel_path, data_only=True)
         
+        # 生成全局唯一的目录后缀，防止多线程并发时临时文件互相覆盖或误删
+        unique_session_id = uuid.uuid4().hex
+        
         if output_dir:
-            self.output_dir = Path(output_dir)
+            self.output_dir = Path(output_dir) / f".temp_assets_{unique_session_id}"
         else:
-            self.output_dir = Path(excel_path).parent / ".temp_assets"
+            self.output_dir = Path(excel_path).parent / f".temp_assets_{unique_session_id}"
         
         self.temp_dir = self.output_dir / "images"
         self.temp_dir.mkdir(parents=True, exist_ok=True)

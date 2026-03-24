@@ -63,7 +63,7 @@ class TemplateEngine:
         """
         template = self.env.get_template(self.template_name)
         
-        # 解析主 Logo 路径（支持本地路径和 URL）
+        # 解析主 Logo 路径（支持 URL 和本地路径）
         resolved_main_logo = self._resolve_image_path(main_logo) if main_logo else None
         
         # 解析子 Logo 列表路径

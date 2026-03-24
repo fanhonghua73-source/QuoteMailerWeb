@@ -337,13 +337,13 @@
                     </a>
                     {% endif %}
                     
-                    <!-- 子品牌 Logo 矩阵 (居中嵌套单行table，valign="middle"保证水平对齐) -->
+                    <!-- 子品牌 Logo 矩阵 (已自动裁剪) -->
                     {% if sub_logos and sub_logos|length > 0 %}
-                    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 30px auto;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto 30px auto;">
                         <tr>
                             {% for logo in sub_logos %}
-                            <td align="center" valign="middle" style="padding: 0 10px;">
-                                <img src="{{ logo }}" alt="Sub Brand" width="85" style="display: block; max-width: 85px; height: auto; border: 0;">
+                            <td align="center" valign="middle" style="width: 20%; padding: 0 10px;">
+                                <img src="{{ logo }}" alt="Sub Brand" width="110" style="display: block; width: 110px; max-width: 110px; height: auto; border: 0;">
                             </td>
                             {% endfor %}
                         </tr>
