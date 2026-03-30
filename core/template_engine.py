@@ -34,6 +34,8 @@ class TemplateEngine:
                custom_greeting: str = None,
                hero_image: str = None,
                video_url: str = None,
+               gallery_style: str = 'strip',
+               gallery_overrides: dict = None,
                brand: str = None,
                tagline: str = None,
                is_preview: bool = False,
@@ -41,7 +43,8 @@ class TemplateEngine:
                sub_logos: list = None,
                link_contact: str = None,
                link_website: str = None,
-               copyright_text: str = None) -> str:
+               copyright_text: str = None,
+               extra_modules: list = None) -> str:
         """
         渲染 HTML 邮件
         
@@ -61,6 +64,10 @@ class TemplateEngine:
             link_website: 官网链接
             copyright_text: 版权信息
         """
+        # 确保 extra_modules 有默认值
+        if extra_modules is None:
+            extra_modules = []
+            
         template = self.env.get_template(self.template_name)
         
         # 解析主 Logo 路径（支持 URL 和本地路径）
@@ -95,6 +102,9 @@ class TemplateEngine:
             custom_greeting=custom_greeting,
             hero_image=self._resolve_image_path(hero_image) if hero_image else None,
             video_url=video_url,
+            gallery_style=gallery_style,
+            gallery_overrides=gallery_overrides or {},
+            extra_modules=extra_modules,
             products=render_products,
             brand=brand or self.DEFAULT_BRAND,
             tagline=tagline or self.DEFAULT_TAGLINE,
@@ -158,15 +168,10 @@ class TemplateEngine:
         return processed
     
     def _resolve_image_path(self, path: str) -> str:
-        """转换本地图片路径为 file:// URL"""
+        """直接返回图片路径（URL或本地路径）"""
         if not path:
             return path
-            
-        if path.startswith('http://') or path.startswith('https://'):
-            return path
-        
-        abs_path = Path(path).resolve()
-        return f"file:///{str(abs_path).replace(chr(92), '/')}"
+        return path
     
     def render_to_file(self, products: list, output_path: str, **kwargs) -> str:
         """渲染并保存到文件"""

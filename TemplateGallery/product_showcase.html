@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Product Showcase - BONBON & Funky Retro</title>
+<style>
+* {margin: 0; padding: 0; box-sizing: border-box}
+body {font-family: Helvetica, Arial, sans-serif; background: #fff; color: #333}
+.container {max-width: 800px; margin: 0 auto; padding: 40px 20px}
+
+.section {margin-bottom: 60px}
+.section h2 {font-size: 24px; font-weight: 600; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #1E3A5F; color: #1E3A5F}
+.section h3 {font-size: 18px; margin-bottom: 16px; color: #666}
+
+.gallery {display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px}
+.gallery img {width: 100%; height: 250px; object-fit: cover; border-radius: 8px; transition: transform 0.3s}
+.gallery img:hover {transform: scale(1.02)}
+
+.product-grid {display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px}
+.product-card {background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1)}
+.product-card img.main-img {width: 100%; height: 280px; object-fit: cover}
+.product-info {padding: 20px}
+.product-info h4 {font-size: 16px; margin-bottom: 8px; color: #1E3A5F}
+.product-info p {font-size: 13px; color: #666; line-height: 1.6}
+
+.hero {text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1E3A5F 0%, #2d5a8a 100%); color: #fff}
+.hero h1 {font-size: 32px; margin-bottom: 16px}
+.hero p {font-size: 16px; opacity: 0.9}
+</style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>BONBON & Funky Retro Collection</h1>
+    <p>Product Showcase Presentation</p>
+</div>
+
+<div class="container">
+
+<div class="section">
+    <h2>BONBON - Dentelle Collection Storage Box</h2>
+    <h3>Product Images</h3>
+    <div class="gallery">
+        <img src="static/images/bonbon_slide1_1.jpg" alt="Slide 1">
+        <img src="static/images/bonbon_slide2_2.jpg" alt="Slide 2">
+        <img src="static/images/bonbon_slide3_3.jpg" alt="Slide 3">
+        <img src="static/images/bonbon_slide4_4.jpg" alt="Slide 4">
+    </div>
+    <h3>Product Details</h3>
+    <div class="product-grid">
+        <div class="product-card">
+            <img class="main-img" src="static/images/bonbon_slide5_5.png" alt="Detail 1">
+            <div class="product-info">
+                <h4>Storage Box - Front View</h4>
+                <p>Premium storage solution with elegant design</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img class="main-img" src="static/images/bonbon_slide5_6.png" alt="Detail 2">
+            <div class="product-info">
+                <h4>Storage Box - Top View</h4>
+                <p>Spacious interior with modular compartments</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img class="main-img" src="static/images/bonbon_slide5_7.png" alt="Detail 3">
+            <div class="product-info">
+                <h4>Storage Box - Usage</h4>
+                <p>Versatile storage for various items</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Funky Retro Collection - Hydration</h2>
+    <h3>Product Images</h3>
+    <div class="gallery">
+        <img src="static/images/funky_slide1_1.jpg" alt="Slide 1">
+        <img src="static/images/funky_slide2_2.jpg" alt="Slide 2">
+        <img src="static/images/funky_slide3_3.jpg" alt="Slide 3">
+        <img src="static/images/funky_slide4_4.jpg" alt="Slide 4">
+        <img src="static/images/funky_slide5_5.jpg" alt="Slide 5">
+        <img src="static/images/funky_slide6_6.jpg" alt="Slide 6">
+    </div>
+    <h3>Product Details</h3>
+    <div class="product-grid">
+        <div class="product-card">
+            <img class="main-img" src="static/images/funky_slide7_7.png" alt="Detail 1">
+            <div class="product-info">
+                <h4>Hydration Product - View 1</h4>
+                <p>Retro-inspired hydration solution</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img class="main-img" src="static/images/funky_slide7_8.png" alt="Detail 2">
+            <div class="product-info">
+                <h4>Hydration Product - View 2</h4>
+                <p>Classic design with modern functionality</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img class="main-img" src="static/images/funky_slide7_9.png" alt="Detail 3">
+            <div class="product-info">
+                <h4>Hydration Product - View 3</h4>
+                <p>Perfect for home or office</p>
+            </div>
+        </div>
+        <div class="product-card">
+            <img class="main-img" src="static/images/funky_slide7_10.png" alt="Detail 4">
+            <div class="product-info">
+                <h4>Hydration Product - View 4</h4>
+                <p>Multiple color options available</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</body>
+</html>

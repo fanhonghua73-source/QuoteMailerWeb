@@ -1,5 +1,35 @@
 {
-  "hero_image": "https://files.catbox.moe/axwmg5.jpg",
+  "hero_image": "https://files.catbox.moe/jyk5sp.jpeg",
   "video_url": "",
-  "greeting": ""
+  "greeting": "Thank you for your interest in our products.",
+  "template_name": "tpl_apple.html",
+  "gallery_style": "strip",
+  "gallery_overrides": {},
+  "extra_modules": [
+    {
+      "image": "https://files.catbox.moe/sivsfz.jpeg",
+      "title": "",
+      "desc": ""
+    },
+    {
+      "image": "https://files.catbox.moe/waibsd.jpeg",
+      "title": "",
+      "desc": ""
+    },
+    {
+      "image": "https://files.catbox.moe/xjrkhw.jpeg",
+      "title": "",
+      "desc": ""
+    },
+    {
+      "image": "https://files.catbox.moe/q1nkv4.jpeg",
+      "title": "",
+      "desc": ""
+    },
+    {
+      "image": "https://files.catbox.moe/dwx9xc.jpeg",
+      "title": "",
+      "desc": ""
+    }
+  ]
 }

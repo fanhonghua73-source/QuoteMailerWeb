@@ -1,5 +1,9 @@
 {
   "hero_image": "https://files.catbox.moe/x8sw8l.jpg",
   "video_url": "https://files.catbox.moe/8j5p43.mp4",
-  "greeting": ""
+  "greeting": "",
+  "template_name": "tpl_apple.html",
+  "gallery_style": "strip",
+  "gallery_overrides": {},
+  "extra_modules": []
 }

@@ -217,6 +217,28 @@
         </table>
         {% endif %}
         
+        <!-- Extra Modules - 图文氛围模块 -->
+        {% if extra_modules and extra_modules|length > 0 %}
+        {% for module in extra_modules %}
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 30px; background-color: #F9F9F9; border-radius: 8px;">
+            <tr>
+                {% if module.title or module.desc %}
+                <td class="stack-column" width="50%" valign="middle" style="padding: 30px;">
+                    {% if module.title %}<h3 style="margin: 0 0 10px 0; font-size: 20px; color: #333333;">{{ module.title }}</h3>{% endif %}
+                    {% if module.desc %}<p style="margin: 0; font-size: 13px; color: #666666; line-height: 1.6;">{{ module.desc }}</p>{% endif %}
+                </td>
+                {% endif %}
+                
+                <td class="stack-column" width="{% if module.title or module.desc %}50%{% else %}100%{% endif %}" valign="middle">
+                    {% if module.image %}
+                    <img src="{{ module.image }}" alt="Feature Image" width="100%" style="display: block; max-width: 100%; border: 0; {% if module.title or module.desc %}border-radius: 0 8px 8px 0;{% else %}border-radius: 8px;{% endif %}">
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        {% endfor %}
+        {% endif %}
+        
         <!-- Intro -->
         {% if intro_text %}
         <div class="intro">

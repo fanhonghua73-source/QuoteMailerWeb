@@ -38,18 +38,16 @@ DEFAULT_SMTP = {
 ADMIN_PASS = os.getenv('ADMIN_PASS', 'admin123')
 
 # ============ 静默全局品牌配置 (不暴露给前端) ============
-# 支持 URL 或本地绝对路径，sub_logos 可以存放多个子品牌图标
 BRAND_ASSETS = {
-    'main_logo': 'https://files.catbox.moe/60x3q1.png',  # 主 Logo (URL 或本地路径)
-    'sub_logos': [  # 子 Logo 列表 (支持多个)
-        'https://files.catbox.moe/lrowca.png',
-        'https://files.catbox.moe/zzybjq.png',
-        'https://files.catbox.moe/4ma01c.png',
-        'https://files.catbox.moe/sttfse.png',
-        'https://files.catbox.moe/0r05x4.png',
-        # 'F:/QuoteMailerWeb/assets/sub2.png'  # 可添加更多
+    'main_logo': 'https://files.catbox.moe/15yc0o.png',
+    'sub_logos': [
+        'https://files.catbox.moe/tvjn84.png',
+        'https://files.catbox.moe/zud8uf.png',
+        'https://files.catbox.moe/mwrhlv.png',
+        'https://files.catbox.moe/1mutgo.png',
+        'https://files.catbox.moe/bs024j.png',
     ],
-    'link_contact': 'https://www.linkedin.com/in/chaoyu-tong-666b89275?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app',
+    'link_contact': 'https://www.linkedin.com/in/chaoyu-tong-666b89275',
     'link_website': 'https://link-int.com',
     'copyright_text': '2005-2026 linklife. All rights reserved.'
 }
@@ -133,6 +131,8 @@ def create_project(name):
         'hero_image': '',
         'video_url': '',
         'greeting': '',
+        'template_name': 'tpl_nordic.html',
+        'extra_modules': [],
         'smtp_host': DEFAULT_SMTP['host'],
         'smtp_port': DEFAULT_SMTP['port'],
         'smtp_user': DEFAULT_SMTP['user'],
@@ -291,6 +291,39 @@ def update_project_api(name):
         return jsonify({'error': msg}), 400
 
 
+@app.route('/api/projects/<name>/rename', methods=['POST'])
+def rename_project_api(name):
+    """重命名项目"""
+    data = request.json
+    new_name = data.get('new_name', '').strip()
+    
+    if not new_name:
+        return jsonify({'error': '请输入新名称'}), 400
+    
+    # 检查非法字符
+    import re
+    if not re.match(r'^[a-zA-Z0-9_\-\u4e00-\u9fa5]+$', new_name):
+        return jsonify({'error': '名称只能包含字母、数字、中文、下划线和连字符'}), 400
+    
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    projects_dir = os.path.join(base_dir, app.config['PROJECTS_FOLDER'])
+    
+    old_path = os.path.join(projects_dir, name)
+    new_path = os.path.join(projects_dir, new_name)
+    
+    if not os.path.isdir(old_path):
+        return jsonify({'error': '原项目不存在'}), 400
+    
+    if os.path.isdir(new_path):
+        return jsonify({'error': '新名称已存在'}), 400
+    
+    try:
+        os.rename(old_path, new_path)
+        return jsonify({'success': True, 'message': f'已重命名为 {new_name}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/projects/<name>/quote', methods=['POST'])
 def upload_quote_api(name):
     """上传报价单"""
@@ -348,6 +381,15 @@ def generate_preview():
         # 读取配置
         config = project.get('config', {})
         
+        # 获取模板名称 - 前端可以覆盖
+        template_name = data.get('template_name') or config.get('template_name', 'tpl_nordic.html')
+        
+        # 多图排版样式 - 前端可以覆盖
+        gallery_style = data.get('gallery_style') or config.get('gallery_style', 'strip')
+        
+        # 单产品样式覆盖 - 前端可以覆盖
+        gallery_overrides = data.get('gallery_overrides') or config.get('gallery_overrides', {})
+        
         # 支持前端传入的自定义问候语（业务员模式）
         custom_greeting = data.get('custom_greeting')
         if not custom_greeting:
@@ -363,8 +405,8 @@ def generate_preview():
         
         print(f"[API] 项目 {project_name}: {len(products)} 个产品")
         
-        # 生成预览
-        engine = TemplateEngine()
+        # 生成预览 - 使用动态模板
+        engine = TemplateEngine(template_name=template_name)
         
         html = engine.render(
             products=products,
@@ -373,6 +415,9 @@ def generate_preview():
             custom_greeting=custom_greeting,
             hero_image=config.get('hero_image') or None,
             video_url=config.get('video_url') or None,
+            gallery_style=gallery_style,
+            gallery_overrides=gallery_overrides,
+            extra_modules=config.get('extra_modules') or [],
             is_preview=True,
             **BRAND_ASSETS
         )
@@ -469,8 +514,8 @@ def send_email():
         products = excel_data.get('products', [])
         assets_dir = excel_data.get('assets_dir')
         
-        # 生成邮件 HTML
-        engine = TemplateEngine()
+        template_name = config.get('template_name', 'tpl_nordic.html')
+        engine = TemplateEngine(template_name=template_name)
         
         # 业务员可以自定义问候语
         custom_greeting = data.get('custom_greeting') or config.get('greeting') or None
@@ -487,6 +532,9 @@ def send_email():
             custom_greeting=custom_greeting,
             hero_image=config.get('hero_image') or None,
             video_url=config.get('video_url') or None,
+            gallery_style=config.get('gallery_style', 'strip'),
+            gallery_overrides=config.get('gallery_overrides', {}),
+            extra_modules=config.get('extra_modules') or [],
             is_preview=False,
             **BRAND_ASSETS
         )

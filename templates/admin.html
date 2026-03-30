@@ -86,6 +86,7 @@
         <div class="hidden flex-col h-full" id="projectDetail">
             <header class="bg-white border-b px-6 py-4">
                 <h2 class="text-2xl font-bold text-gray-800" id="currentProjectName">项目名称</h2>
+                <button onclick="renameProject()" class="ml-2 text-gray-500 hover:text-blue-600" title="修改名称">✏️</button>
                 <p class="text-sm text-gray-500 mt-1"><span id="hasConfig">✓</span> 已配置 | <span id="hasQuote">✗</span> 未上传报价单</p>
             </header>
             <div class="flex-1 overflow-y-auto p-6">
@@ -105,7 +106,42 @@
                         <div class="space-y-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">主图链接</label><input type="url" id="heroImage" placeholder="https://..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">视频链接</label><input type="url" id="videoUrl" placeholder="https://youtube.com/..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
+                            
+                            <!-- 图文氛围模块 -->
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">附加图文模块 (Lifestyle & Features)</label>
+                                <div id="extraModulesContainer" class="space-y-3"></div>
+                                <button onclick="addExtraModule()" class="mt-2 text-sm text-blue-600 hover:text-blue-800">+ 添加图文模块</button>
+                            </div>
+                            
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">专属问候语</label><textarea id="greeting" rows="3" placeholder="Hi John,..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea></div>
+                            
+                            <!-- 模板选择 -->
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">选择展示模板</label>
+                                <select id="templateName" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                    <option value="tpl_nordic.html">Nordic Minimal</option>
+                                    <option value="tpl_apple.html">Apple Cupertino</option>
+                                    <option value="tpl_vogue.html">Vogue Editorial</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 多图排版样式 (默认) -->
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">多图排版样式 (默认)</label>
+                                <select id="galleryStyle" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                    <option value="strip">横向条状缩略图 (Strip)</option>
+                                    <option value="grid">网格缩略图 (Grid)</option>
+                                    <option value="carousel">大图轮播 (Carousel)</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">可在下方案件中为单个产品覆盖此设置</p>
+                            </div>
+                            
+                            <!-- 单产品多图样式覆盖 -->
+                            <div class="mt-4" id="perProductGallerySection" style="display:none;">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">单产品多图样式覆盖</label>
+                                <div id="perProductGalleryList" class="space-y-2"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex gap-4">
@@ -127,6 +163,129 @@
     
     <script>
         let currentProject = null;
+        let extraModules = [];
+        
+        // 添加图文模块
+        function addExtraModule(moduleData = null) {
+            const container = document.getElementById('extraModulesContainer');
+            const index = extraModules.length;
+            
+            const div = document.createElement('div');
+            div.className = 'p-3 border border-gray-200 rounded-lg bg-gray-50';
+            div.dataset.index = index;
+            div.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-600">模块 ${index + 1}</span>
+                    <button type="button" onclick="removeExtraModule(${index})" class="text-red-500 hover:text-red-700 text-sm">删除</button>
+                </div>
+                <input type="url" placeholder="图片链接 (Image URL)" class="w-full px-3 py-2 border border-gray-300 rounded mb-2 module-image">
+                <input type="text" placeholder="大标题 (Title - 可选)" class="w-full px-3 py-2 border border-gray-300 rounded mb-2 module-title">
+                <textarea placeholder="描述文字 (Description - 可选)" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded module-desc"></textarea>
+            `;
+            
+            container.appendChild(div);
+            extraModules.push({});
+            
+            // 如果有数据，回填
+            if (moduleData) {
+                div.querySelector('.module-image').value = moduleData.image || '';
+                div.querySelector('.module-title').value = moduleData.title || '';
+                div.querySelector('.module-desc').value = moduleData.desc || '';
+            }
+        }
+        
+        // 删除图文模块
+        function removeExtraModule(index) {
+            const container = document.getElementById('extraModulesContainer');
+            const divs = container.querySelectorAll('[data-index]');
+            if (divs[index]) {
+                divs[index].remove();
+                extraModules.splice(index, 1);
+                // 重新编号
+                container.querySelectorAll('[data-index]').forEach((div, i) => {
+                    div.dataset.index = i;
+                    div.querySelector('span').textContent = '模块 ' + (i + 1);
+                    div.querySelector('button').setAttribute('onclick', 'removeExtraModule(' + i + ')');
+                });
+            }
+        }
+        
+        // 收集动态模块数据
+        function collectExtraModules() {
+            const container = document.getElementById('extraModulesContainer');
+            const modules = [];
+            container.querySelectorAll('[data-index]').forEach(div => {
+                const image = div.querySelector('.module-image').value.trim();
+                const title = div.querySelector('.module-title').value.trim();
+                const desc = div.querySelector('.module-desc').value.trim();
+                if (image || title || desc) {
+                    modules.push({ image, title, desc });
+                }
+            });
+            return modules;
+        }
+        
+        // 加载单产品多图样式覆盖
+        function loadPerProductGalleryOverrides(overrides) {
+            const container = document.getElementById('perProductGalleryList');
+            container.innerHTML = '';
+            for (const [productName, style] of Object.entries(overrides)) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded';
+                div.innerHTML = `
+                    <span class="flex-1 text-sm text-gray-700">${productName}</span>
+                    <select class="px-2 py-1 border rounded text-sm per-gallery-override" data-product="${productName}">
+                        <option value="strip" ${style=='strip'?'selected':''}>Strip</option>
+                        <option value="grid" ${style=='grid'?'selected':''}>Grid</option>
+                        <option value="carousel" ${style=='carousel'?'selected':''}>Carousel</option>
+                    </select>
+                `;
+                container.appendChild(div);
+            }
+            document.getElementById('perProductGallerySection').style.display = 'block';
+        }
+        
+        // 根据产品列表构建单产品多图样式选择UI
+        function buildPerProductGalleryUI(products, existingOverrides) {
+            const container = document.getElementById('perProductGalleryList');
+            const section = document.getElementById('perProductGallerySection');
+            container.innerHTML = '';
+            
+            // 只显示有多张图片的产品
+            const multiImgProducts = products.filter(p => p.images && p.images.length > 1);
+            
+            if (multiImgProducts.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            multiImgProducts.forEach(p => {
+                const currentStyle = existingOverrides[p.name] || '';
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded';
+                div.innerHTML = `
+                    <span class="flex-1 text-sm text-gray-700 truncate" title="${p.name}">${p.name}</span>
+                    <select class="px-2 py-1 border rounded text-sm per-gallery-override" data-product="${p.name}">
+                        <option value="">默认</option>
+                        <option value="strip" ${currentStyle=='strip'?'selected':''}>Strip</option>
+                        <option value="grid" ${currentStyle=='grid'?'selected':''}>Grid</option>
+                        <option value="carousel" ${currentStyle=='carousel'?'selected':''}>Carousel</option>
+                    </select>
+                `;
+                container.appendChild(div);
+            });
+            
+            section.style.display = 'block';
+        }
+        
+        // 收集单产品样式覆盖
+        function collectGalleryOverrides() {
+            const overrides = {};
+            document.querySelectorAll('.per-gallery-override').forEach(sel => {
+                overrides[sel.dataset.product] = sel.value;
+            });
+            return overrides;
+        }
         
         // 页面加载时获取项目列表和全局设置
         window.onload = function() {
@@ -343,6 +502,32 @@
                 document.getElementById('heroImage').value = project.config.hero_image || '';
                 document.getElementById('videoUrl').value = project.config.video_url || '';
                 document.getElementById('greeting').value = project.config.greeting || '';
+                document.getElementById('templateName').value = project.config.template_name || 'tpl_nordic.html';
+                
+                // 加载图文模块
+                document.getElementById('extraModulesContainer').innerHTML = '';
+                extraModules = [];
+                if (project.config.extra_modules && project.config.extra_modules.length > 0) {
+                    project.config.extra_modules.forEach(m => addExtraModule(m));
+                }
+                
+                // 加载多图排版样式
+                document.getElementById('galleryStyle').value = project.config.gallery_style || 'strip';
+                
+                // 加载单产品样式覆盖列表
+                if (project.has_quote) {
+                    fetch('/api/preview', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ project_name: project.name })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            buildPerProductGalleryUI(data.products || [], project.config.gallery_overrides || {});
+                        }
+                    });
+                }
             }
             
             // 更新左侧选中状态
@@ -368,6 +553,30 @@
                     loadProjectDetail(data.name);
                 } else {
                     alert(data.error || '创建失败');
+                }
+            });
+        }
+        
+        // 重命名项目
+        function renameProject() {
+            if (!currentProject) return;
+            
+            const newName = prompt('请输入新名称:', currentProject.name);
+            if (!newName || newName === currentProject.name) return;
+            
+            fetch('/api/projects/' + currentProject.name + '/rename', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ new_name: newName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('重命名成功');
+                    loadProjects();
+                    loadProjectDetail(newName);
+                } else {
+                    alert(data.error || '重命名失败');
                 }
             });
         }
@@ -433,7 +642,11 @@
             const config = {
                 hero_image: document.getElementById('heroImage').value,
                 video_url: document.getElementById('videoUrl').value,
-                greeting: document.getElementById('greeting').value
+                greeting: document.getElementById('greeting').value,
+                template_name: document.getElementById('templateName').value,
+                gallery_style: document.getElementById('galleryStyle').value,
+                gallery_overrides: collectGalleryOverrides(),
+                extra_modules: collectExtraModules()
             };
             
             fetch('/api/projects/' + currentProject.name, {
@@ -458,12 +671,25 @@
             document.getElementById('previewBtn').disabled = true;
             document.getElementById('previewBtn').textContent = '生成中...';
             
+            // 直接用当前下拉框的值，不等保存
+            const template_name = document.getElementById('templateName').value;
+            const gallery_style = document.getElementById('galleryStyle').value;
+            
+            // 收集单产品覆盖
+            const gallery_overrides = {};
+            document.querySelectorAll('.per-gallery-override').forEach(sel => {
+                if (sel.value) gallery_overrides[sel.dataset.product] = sel.value;
+            });
+            
             fetch('/api/preview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     project_name: currentProject.name,
-                    custom_greeting: document.getElementById('greeting').value
+                    custom_greeting: document.getElementById('greeting').value,
+                    template_name: template_name,
+                    gallery_style: gallery_style,
+                    gallery_overrides: gallery_overrides
                 })
             })
             .then(res => res.json())

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <!--[if mso]><style type="text/css">table{border-collapse:collapse;}td{font-family:Arial,sans-serif;}</style><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#FAFAFA;">
+    
+    <!-- Header -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(180deg,#F5F5F7 0%,#FFFFFF 100%);">
+        <tr>
+            <td align="center" style="padding:60px 40px 40px 40px;">
+                <h1 style="font-size:21px;font-weight:600;letter-spacing:-0.5px;color:#1D1D1F;margin:0;padding:0;">{{ title }}</h1>
+                <div style="width:60px;height:2px;background:#007AFF;margin:20px auto;"></div>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Custom Greeting -->
+    {% if custom_greeting %}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td style="padding:30px 40px 20px 40px;text-align:center;">
+                <p style="font-size:16px;color:#1D1D1F;line-height:1.6;margin:0;">{{ custom_greeting }}</p>
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+    
+    <!-- Hero Image -->
+    {% if hero_image %}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFFFFF;">
+        <tr>
+            <td align="center" style="padding:0 0 20px 0;">
+                {% if is_preview %}<img src="{{ hero_image }}" alt="Product Quote" width="600" style="display:block;max-width:100%;border:0;">{% else %}<img src="{{ hero_image }}" alt="Product Quote" width="600" style="display:block;max-width:100%;border:0;">{% endif %}
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+    
+    <!-- Extra Modules -->
+    {% if extra_modules and extra_modules|length > 0 %}
+    {% for module in extra_modules %}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:30px 0;background:#F5F5F7;border-radius:16px;">
+        <tr>
+            {% if module.title or module.desc %}
+            <td width="50%" valign="top" style="padding:30px;">
+                {% if module.title %}<h3 style="font-size:20px;color:#1D1D1F;font-weight:600;margin:0 0 12px 0;">{{ module.title }}</h3>{% endif %}
+                {% if module.desc %}<p style="font-size:14px;color:#86868B;line-height:1.6;margin:0;">{{ module.desc }}</p>{% endif %}
+            </td>
+            {% endif %}
+            <td width="{% if module.title or module.desc %}50%{% else %}100%{% endif %}" style="padding:0;">
+                {% if module.image %}
+                {% if is_preview %}<img src="{{ module.image }}" alt="Feature" width="100%" style="display:block;">{% else %}<img src="{{ module.image }}" alt="Feature" width="100%" style="display:block;">{% endif %}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    {% endfor %}
+    {% endif %}
+    
+    <!-- Intro -->
+    {% if intro_text %}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td align="center" style="padding:40px;text-align:center;">
+                <p style="font-size:17px;color:#86868B;font-weight:400;margin:0;">{{ intro_text }}</p>
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+    
+    <!-- Products - Table-based Zigzag -->
+    {% for product in products %}
+    {% set product_gallery_style = gallery_overrides.get(product.name, gallery_style) if gallery_overrides else gallery_style %}
+    
+    <!-- Outer wrapper table -->
+    <table width="100%" max-width="680" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 40px auto;background:#FFFFFF;">
+        <tr>
+            {% if loop.index0 % 2 == 0 %}
+            <!-- Even row: Left image | Right text -->
+            <td width="50%" valign="middle" align="center" style="background:#F5F5F7;padding:20px;">
+                {% set img_list = product.preview_srcs if (is_preview and product.preview_srcs) else (product.cids if product.cids else product.images or []) %}
+                {% if img_list and img_list[0] %}
+                {% if is_preview %}<img src="{{ img_list[0] }}" alt="{{ product.name }}" width="100%" style="max-width:300px;display:block;border-radius:12px;border:0;">{% else %}<img src="cid:{{ img_list[0] }}" alt="{{ product.name }}" width="100%" style="max-width:300px;display:block;border-radius:12px;border:0;">{% endif %}
+                {% if img_list|length > 1 %}
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;">
+                    <tr>
+                    {% for img in img_list[1:] %}
+                    <td width="33.33%" align="center" style="padding:0 4px;">
+                    {% if is_preview %}<img src="{{ img }}" width="100%" style="max-width:90px;display:block;border-radius:4px;border:0;">{% else %}<img src="cid:{{ img }}" width="100%" style="max-width:90px;display:block;border-radius:4px;border:0;">{% endif %}
+                    </td>
+                    {% endfor %}
+                    </tr>
+                </table>
+                {% endif %}
+                {% endif %}
+            </td>
+            <td width="50%" valign="middle" style="padding:30px 40px;">
+                <p style="font-size:12px;color:#86868B;font-family:monospace;margin:0 0 8px 0;">{{ product.item }}</p>
+                <h3 style="font-size:24px;font-weight:600;color:#1D1D1F;margin:0 0 8px 0;line-height:1.2;">{{ product.name }}</h3>
+                {% if product.spec %}<p style="font-size:14px;color:#86868B;margin:0 0 16px 0;line-height:1.5;">{{ product.spec }}</p>{% endif %}
+                {% if product.packing or product.cbm or product.moq %}
+                <p style="font-size:13px;color:#A1A1A6;margin:0 0 4px 0;">{% if product.packing %}Packing: {{ product.packing }}{% endif %}</p>
+                <p style="font-size:13px;color:#A1A1A6;margin:0 0 4px 0;">{% if product.cbm %}CBM: {{ product.cbm }}{% endif %}</p>
+                <p style="font-size:13px;color:#A1A1A6;margin:0;">{% if product.moq %}MOQ: {{ product.moq }}{% endif %}</p>
+                {% endif %}
+                {% if product.price %}
+                <p style="font-size:20px;font-weight:600;color:#1D1D1F;margin:16px 0 0 0;">${{ product.price }}</p>
+                {% endif %}
+            </td>
+            {% else %}
+            <!-- Odd row: Left text | Right image -->
+            <td width="50%" valign="middle" style="padding:30px 40px;">
+                <p style="font-size:12px;color:#86868B;font-family:monospace;margin:0 0 8px 0;">{{ product.item }}</p>
+                <h3 style="font-size:24px;font-weight:600;color:#1D1D1F;margin:0 0 8px 0;line-height:1.2;">{{ product.name }}</h3>
+                {% if product.spec %}<p style="font-size:14px;color:#86868B;margin:0 0 16px 0;line-height:1.5;">{{ product.spec }}</p>{% endif %}
+                {% if product.packing or product.cbm or product.moq %}
+                <p style="font-size:13px;color:#A1A1A6;margin:0 0 4px 0;">{% if product.packing %}Packing: {{ product.packing }}{% endif %}</p>
+                <p style="font-size:13px;color:#A1A1A6;margin:0 0 4px 0;">{% if product.cbm %}CBM: {{ product.cbm }}{% endif %}</p>
+                <p style="font-size:13px;color:#A1A1A6;margin:0;">{% if product.moq %}MOQ: {{ product.moq }}{% endif %}</p>
+                {% endif %}
+                {% if product.price %}
+                <p style="font-size:20px;font-weight:600;color:#1D1D1F;margin:16px 0 0 0;">${{ product.price }}</p>
+                {% endif %}
+            </td>
+            <td width="50%" valign="middle" align="center" style="background:#F5F5F7;padding:20px;">
+                {% set img_list = product.preview_srcs if (is_preview and product.preview_srcs) else (product.cids if product.cids else product.images or []) %}
+                {% if img_list and img_list[0] %}
+                {% if is_preview %}<img src="{{ img_list[0] }}" alt="{{ product.name }}" width="100%" style="max-width:300px;display:block;border-radius:12px;border:0;">{% else %}<img src="cid:{{ img_list[0] }}" alt="{{ product.name }}" width="100%" style="max-width:300px;display:block;border-radius:12px;border:0;">{% endif %}
+                {% if img_list|length > 1 %}
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;">
+                    <tr>
+                    {% for img in img_list[1:] %}
+                    <td width="33.33%" align="center" style="padding:0 4px;">
+                    {% if is_preview %}<img src="{{ img }}" width="100%" style="max-width:90px;display:block;border-radius:4px;border:0;">{% else %}<img src="cid:{{ img }}" width="100%" style="max-width:90px;display:block;border-radius:4px;border:0;">{% endif %}
+                    </td>
+                    {% endfor %}
+                    </tr>
+                </table>
+                {% endif %}
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+    </table>
+    {% endfor %}
+    
+    <!-- Footer -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F5F7;">
+        <tr>
+            <td align="center" style="padding:48px 40px;text-align:center;">
+                {% if main_logo %}
+                {% if is_preview %}<img src="{{ main_logo }}" alt="Brand Logo" width="160" style="display:block;margin:0 auto 20px auto;border:0;">{% else %}<img src="{{ main_logo }}" alt="Brand Logo" width="160" style="display:block;margin:0 auto 20px auto;border:0;">{% endif %}
+                {% endif %}
+                {% if sub_logos and sub_logos|length > 0 %}
+                <p style="margin:0 0 20px 0;">
+                {% for logo in sub_logos %}
+                {% if is_preview %}<img src="{{ logo }}" alt="Sub Brand" width="110" style="display:inline-block;margin:0 7px;border:0;">{% else %}<img src="{{ logo }}" alt="Sub Brand" width="110" style="display:inline-block;margin:0 7px;border:0;">{% endif %}
+                {% endfor %}
+                </p>
+                {% endif %}
+                {% if link_contact or link_website %}
+                <p style="font-size:13px;color:#86868B;margin:0 0 8px 0;">
+                {% if link_contact %}<a href="{{ link_contact }}" style="color:#007AFF;text-decoration:none;margin:0 12px;">LinkedIn</a>{% endif %}
+                {% if link_website %}<a href="{{ link_website }}" style="color:#007AFF;text-decoration:none;margin:0 12px;">Website</a>{% endif %}
+                </p>
+                {% endif %}
+                {% if copyright_text %}
+                <p style="font-size:11px;color:#86868B;margin:16px 0 0 0;">{{ copyright_text }}</p>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>

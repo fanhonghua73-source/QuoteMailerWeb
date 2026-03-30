@@ -1,0 +1,25 @@
+{
+  "hero_image": "https://files.catbox.moe/98rlb8.jpeg",
+  "video_url": "",
+  "greeting": "Thank you for your interest in our products.",
+  "template_name": "tpl_apple.html",
+  "gallery_style": "strip",
+  "gallery_overrides": {},
+  "extra_modules": [
+    {
+      "image": "https://files.catbox.moe/oj41iv.jpeg",
+      "title": "",
+      "desc": ""
+    },
+    {
+      "image": "https://files.catbox.moe/5aq5js.jpeg",
+      "title": "",
+      "desc": ""
+    },
+    {
+      "image": "https://files.catbox.moe/ewq748.jpeg",
+      "title": "",
+      "desc": ""
+    }
+  ]
+}
