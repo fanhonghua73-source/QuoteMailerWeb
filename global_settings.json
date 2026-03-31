@@ -1,4 +1,7 @@
 {
   "smtp_user": "fanhonghua73@gmail.com",
-  "smtp_pass": "lmsqfnnusgzwsibb"
+  "smtp_pass": "lmsqfnnusgzwsibb",
+  "smtp_host": "smtp.gmail.com",
+  "smtp_port": 587,
+  "smtp_from": "NINGBO FUTURE"
 }

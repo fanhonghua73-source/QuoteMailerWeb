@@ -39,13 +39,13 @@ ADMIN_PASS = os.getenv('ADMIN_PASS', 'admin123')
 
 # ============ 静默全局品牌配置 (不暴露给前端) ============
 BRAND_ASSETS = {
-    'main_logo': 'https://files.catbox.moe/15yc0o.png',
+    'main_logo': 'https://files.catbox.moe/3xuquo.png',
     'sub_logos': [
         'https://files.catbox.moe/tvjn84.png',
         'https://files.catbox.moe/zud8uf.png',
         'https://files.catbox.moe/mwrhlv.png',
         'https://files.catbox.moe/1mutgo.png',
-        'https://files.catbox.moe/bs024j.png',
+        'https://files.catbox.moe/7rr1j5.png',
     ],
     'link_contact': 'https://www.linkedin.com/in/chaoyu-tong-666b89275',
     'link_website': 'https://link-int.com',
@@ -419,6 +419,7 @@ def generate_preview():
             gallery_overrides=gallery_overrides,
             extra_modules=config.get('extra_modules') or [],
             is_preview=True,
+            reply_to_email='fanhonghua@gmail.com',
             **BRAND_ASSETS
         )
         
@@ -479,14 +480,23 @@ def send_email():
         global_settings = load_settings()
         
         # SMTP 配置优先级：
-        # 1. 前端传入的个人凭据（业务员正式发送模式）
-        # 2. 全局测试发件箱配置（is_test 模式）
+        # 1. 前端传入的个人凭据（业务员正式发送 + 测试模式）
+        # 2. 全局测试发件箱配置（is_test 模式，无个人凭据时）
         # 3. 项目配置中的凭据
         # 4. .env 全局配置（管理员模式）
         if smtp_user and smtp_pass:
-            # 业务员使用自己的邮箱
+            # 业务员使用自己的邮箱（测试和正式都使用）
             smtp_host = data.get('smtp_host') or 'smtp.gmail.com'
-            smtp_port = int(data.get('smtp_port') or 587)
+            # 端口处理：如果传了端口就用，否则根据主机判断默认端口
+            smtp_port_str = data.get('smtp_port')
+            if smtp_port_str:
+                smtp_port = int(smtp_port_str)
+            elif 'qq.com' in smtp_host.lower() or 'smtp.qq.com' in smtp_host.lower():
+                smtp_port = 465
+            elif 'gmail.com' in smtp_host.lower():
+                smtp_port = 587
+            else:
+                smtp_port = 587
             from_name = data.get('from_name') or config.get('from_name') or DEFAULT_SMTP['from_name']
         elif is_test and global_settings.get('smtp_user'):
             # 测试模式：使用全局配置的测试发件箱
@@ -536,6 +546,7 @@ def send_email():
             gallery_overrides=config.get('gallery_overrides', {}),
             extra_modules=config.get('extra_modules') or [],
             is_preview=False,
+            reply_to_email='fanhonghua@gmail.com',
             **BRAND_ASSETS
         )
         

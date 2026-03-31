@@ -332,25 +332,35 @@
                     <!-- 主 Logo -->
                     {% if main_logo %}
                     <a href="{{ link_website }}" target="_blank" style="text-decoration: none;">
-                        <img src="{{ main_logo }}" alt="LINKLIFE" width="150" style="display:block;max-width:150px;height:auto;border:0;margin-bottom:30px;">
+                        <img src="{{ main_logo }}" alt="LINKLIFE" width="180" style="display:block;max-width:180px;height:auto;border:0;margin-bottom:30px;">
                     </a>
                     {% endif %}
-                    
-                    <!-- 子品牌 Logo -->
+
+                    <!-- 子品牌 Logo - 强制一行显示 -->
                     {% if sub_logos and sub_logos|length > 0 %}
-                    <div style="display:flex;justify-content:center;gap:20px;margin-bottom:30px;">
-                    {% for logo in sub_logos %}
-                        <img src="{{ logo }}" alt="Sub Brand" width="110" style="display:block;width:110px;max-width:110px;height:auto;border:0;">
-                    {% endfor %}
-                    </div>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:30px;">
+                        <tr>
+                            <td align="center">
+                                <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                    {% for logo in sub_logos %}
+                                    <td style="padding:0 12px;">
+                                        <img src="{{ logo }}" alt="Sub Brand" width="150" style="display:block;width:150px;max-width:150px;height:auto;border:0;">
+                                    </td>
+                                    {% endfor %}
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                     {% endif %}
                     
                     <!-- 按钮区域 -->
                     <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
                         <tr>
-                            {% if link_contact %}
+                            {% if reply_to_email %}
                             <td style="padding-right: 8px;">
-                                <a href="{{ link_contact }}" target="_blank" style="display: inline-block; padding: 8px 20px; background-color: #333333; color: #FFFFFF; text-decoration: none; font-size: 12px; font-family: Helvetica, Arial, sans-serif; border-radius: 4px;">CONTACT</a>
+                                <a href="mailto:{{ reply_to_email }}" style="display: inline-block; padding: 8px 20px; background-color: #007AFF; color: #FFFFFF; text-decoration: none; font-size: 12px; font-family: Helvetica, Arial, sans-serif; border-radius: 4px;">CONTACT</a>
                             </td>
                             {% endif %}
                             {% if link_website %}

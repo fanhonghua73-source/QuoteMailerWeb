@@ -217,7 +217,7 @@
     </div>
     
     <!-- 状态提示 -->
-    <div id="status" class="fixed bottom-6 right-6 hidden px-6 py-3 rounded-lg shadow-lg"></div>
+    <div id="status" class="fixed bottom-6 right-6 hidden px-6 py-3 rounded-lg shadow-lg z-50"></div>
     
     <script>
         // ========== 全局变量 ==========
@@ -381,33 +381,40 @@
             });
         }
         
-        // ========== 系统测试发信（使用管理员配置的全局发件箱）==========
+        // ========== 系统测试发信（给自己发送测试邮件）==========
         function testSend() {
-            const email = document.getElementById('toEmail').value.trim();
-            if (!email) {
-                alert('请输入客户邮箱');
+            const smtp_user = document.getElementById('senderEmail').value.trim();
+            const smtp_pass = document.getElementById('senderPass').value.trim();
+            const smtp_host = document.getElementById('senderHost').value.trim();
+            const smtp_port = document.getElementById('senderPort').value.trim();
+            if (!smtp_user || !smtp_pass) {
+                alert('请输入发件邮箱和授权码');
                 return;
             }
-            
+
             const btn = event.target;
             btn.disabled = true;
             btn.textContent = '发送中...';
-            
-            // 传递客户邮箱，后端使用全局发件箱发送
+
+            // 给自己发送测试邮件（收件人 = 发件人）
             fetch('/api/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     project_name: currentProject.name,
-                    to_email: email,
+                    to_email: smtp_user,  // 给自己发
+                    smtp_user: smtp_user,
+                    smtp_pass: smtp_pass,
+                    smtp_host: smtp_host,
+                    smtp_port: smtp_port,
                     custom_greeting: document.getElementById('customGreeting').value,
-                    is_test: true  // 标记为测试发送
+                    is_test: true
                 })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showStatus('测试邮件已发送（使用全局发件箱）');
+                    showStatus('测试邮件已发送到: ' + smtp_user);
                 } else {
                     alert('发送失败: ' + (data.error || '未知错误'));
                 }

@@ -355,19 +355,25 @@
                     <!-- 主 Logo (固定宽度150，底部预留30px呼吸感) -->
                     {% if main_logo %}
                     <a href="{{ link_website }}" target="_blank" style="text-decoration: none;">
-                        <img src="{{ main_logo }}" alt="LINKLIFE" width="150" style="display: block; max-width: 150px; height: auto; margin: 0 auto 30px auto; border: 0;">
+                        <img src="{{ main_logo }}" alt="LINKLIFE" width="180" style="display: block; max-width: 180px; height: auto; margin: 0 auto 30px auto; border: 0;">
                     </a>
                     {% endif %}
                     
-                    <!-- 子品牌 Logo 矩阵 (已自动裁剪) -->
+                    <!-- 子品牌 Logo 矩阵 (已自动裁剪) - 强制一行显示 -->
                     {% if sub_logos and sub_logos|length > 0 %}
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; margin: 0 auto 30px auto;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 30px auto;">
                         <tr>
-                            {% for logo in sub_logos %}
-                            <td align="center" valign="middle" style="width: 20%; padding: 0 10px;">
-                                <img src="{{ logo }}" alt="Sub Brand" width="110" style="display: block; width: 110px; max-width: 110px; height: auto; border: 0;">
+                            <td align="center">
+                                <table cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                    {% for logo in sub_logos %}
+                                    <td style="padding:0 12px;">
+                                        <img src="{{ logo }}" alt="Sub Brand" width="150" style="display:block;width:150px;max-width:150px;height:auto;border:0;">
+                                    </td>
+                                    {% endfor %}
+                                    </tr>
+                                </table>
                             </td>
-                            {% endfor %}
                         </tr>
                     </table>
                     {% endif %}

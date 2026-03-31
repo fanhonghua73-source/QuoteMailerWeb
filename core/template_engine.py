@@ -27,7 +27,7 @@ class TemplateEngine:
         
         self.template_name = template_name
     
-    def render(self, 
+    def render(self,
                products: list,
                title: str = "Product Quote",
                intro_text: str = None,
@@ -44,7 +44,8 @@ class TemplateEngine:
                link_contact: str = None,
                link_website: str = None,
                copyright_text: str = None,
-               extra_modules: list = None) -> str:
+               extra_modules: list = None,
+               reply_to_email: str = None) -> str:
         """
         渲染 HTML 邮件
         
@@ -114,7 +115,8 @@ class TemplateEngine:
             sub_logos=brand_kwargs.get('sub_logos'),
             link_contact=brand_kwargs.get('link_contact'),
             link_website=brand_kwargs.get('link_website'),
-            copyright_text=brand_kwargs.get('copyright_text')
+            copyright_text=brand_kwargs.get('copyright_text'),
+            reply_to_email=reply_to_email
         )
         
         return html

@@ -33,7 +33,13 @@
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFFFFF;">
         <tr>
             <td align="center" style="padding:0 0 20px 0;">
+                {% if video_url %}
+                <a href="{{ video_url }}" target="_blank" style="text-decoration: none;">
+                    <img src="{{ hero_image }}" alt="Product Quote" width="600" style="display:block;max-width:100%;border:0;">
+                </a>
+                {% else %}
                 {% if is_preview %}<img src="{{ hero_image }}" alt="Product Quote" width="600" style="display:block;max-width:100%;border:0;">{% else %}<img src="{{ hero_image }}" alt="Product Quote" width="600" style="display:block;max-width:100%;border:0;">{% endif %}
+                {% endif %}
             </td>
         </tr>
     </table>
@@ -152,18 +158,29 @@
         <tr>
             <td align="center" style="padding:48px 40px;text-align:center;">
                 {% if main_logo %}
-                {% if is_preview %}<img src="{{ main_logo }}" alt="Brand Logo" width="160" style="display:block;margin:0 auto 20px auto;border:0;">{% else %}<img src="{{ main_logo }}" alt="Brand Logo" width="160" style="display:block;margin:0 auto 20px auto;border:0;">{% endif %}
+                {% if is_preview %}<img src="{{ main_logo }}" alt="Brand Logo" width="300" style="display:block;margin:0 auto 20px auto;border:0;">{% else %}<img src="{{ main_logo }}" alt="Brand Logo" width="300" style="display:block;margin:0 auto 20px auto;border:0;">{% endif %}
                 {% endif %}
                 {% if sub_logos and sub_logos|length > 0 %}
-                <p style="margin:0 0 20px 0;">
-                {% for logo in sub_logos %}
-                {% if is_preview %}<img src="{{ logo }}" alt="Sub Brand" width="110" style="display:inline-block;margin:0 7px;border:0;">{% else %}<img src="{{ logo }}" alt="Sub Brand" width="110" style="display:inline-block;margin:0 7px;border:0;">{% endif %}
-                {% endfor %}
-                </p>
+                <!-- 子品牌 Logo - 强制一行显示 -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0;">
+                    <tr>
+                        <td align="center">
+                            <table cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                {% for logo in sub_logos %}
+                                <td style="padding:0 8px;">
+                                    <img src="{{ logo }}" alt="Sub Brand" width="160" style="display:block;width:160px;max-width:160px;height:auto;border:0;">
+                                </td>
+                                {% endfor %}
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
                 {% endif %}
-                {% if link_contact or link_website %}
+                {% if reply_to_email or link_website %}
                 <p style="font-size:13px;color:#86868B;margin:0 0 8px 0;">
-                {% if link_contact %}<a href="{{ link_contact }}" style="color:#007AFF;text-decoration:none;margin:0 12px;">LinkedIn</a>{% endif %}
+                {% if reply_to_email %}<a href="mailto:{{ reply_to_email }}" style="color:#007AFF;text-decoration:none;margin:0 12px;">Contact</a>{% endif %}
                 {% if link_website %}<a href="{{ link_website }}" style="color:#007AFF;text-decoration:none;margin:0 12px;">Website</a>{% endif %}
                 </p>
                 {% endif %}
