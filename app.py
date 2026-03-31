@@ -39,13 +39,14 @@ ADMIN_PASS = os.getenv('ADMIN_PASS', 'admin123')
 
 # ============ 静默全局品牌配置 (不暴露给前端) ============
 BRAND_ASSETS = {
-    'main_logo': 'https://files.catbox.moe/3xuquo.png',
+    'main_logo': 'https://files.catbox.moe/pleppu.png',
     'sub_logos': [
-        'https://files.catbox.moe/tvjn84.png',
-        'https://files.catbox.moe/zud8uf.png',
-        'https://files.catbox.moe/mwrhlv.png',
-        'https://files.catbox.moe/1mutgo.png',
-        'https://files.catbox.moe/7rr1j5.png',
+        'https://files.catbox.moe/zrp63u.png',
+        'https://files.catbox.moe/3wmdph.png',
+        'https://files.catbox.moe/r0i5jl.png',
+        'https://files.catbox.moe/z0sdmj.png',
+        'https://files.catbox.moe/jntxva.png',
+        'https://files.catbox.moe/rhmi9f.png',
     ],
     'link_contact': 'https://www.linkedin.com/in/chaoyu-tong-666b89275',
     'link_website': 'https://link-int.com',

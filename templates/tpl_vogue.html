@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <!--[if mso]><style type="text/css">table{border-collapse:collapse;}td{font-family:Arial,sans-serif;}</style><![endif]-->
+    <style>
+        .sub-logo { opacity: 0.5; filter: grayscale(50%); transition: opacity 0.3s; }
+        @media only screen and (min-width: 481px) {
+            .sub-logo:hover { opacity: 1 !important; filter: none !important; }
+        }
+        @media only screen and (max-width: 480px) {
+            .sub-logos-table { display: none !important; }
+            .sub-logos-mobile { display: table-row-group !important; }
+        }
+    </style>
 </head>
 <body style="margin:0;padding:0;background-color:#FAFAFA;">
     
@@ -132,43 +142,83 @@
     </table>
     {% endfor %}
     
-    <!-- Footer -->
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1A1A1A;">
+    <!-- Footer: 点线面现代布局 (暗色主题适配) -->
+    <!-- 1. 整体容器 - 深灰底色 -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #1A1A1A;">
         <tr>
-            <td align="center" style="padding:50px 30px;text-align:center;">
-                {% if main_logo %}
-                {% if is_preview %}<img src="{{ main_logo }}" alt="Brand Logo" width="300" style="display:block;margin:0 auto 20px auto;border:0;">{% else %}<img src="{{ main_logo }}" alt="Brand Logo" width="300" style="display:block;margin:0 auto 20px auto;border:0;">{% endif %}
-                {% endif %}
-                {% if sub_logos and sub_logos|length > 0 %}
-                <!-- 子品牌 Logo - 强制一行显示 -->
-                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px 0;">
+            <td style="padding: 40px 24px;">
+
+                <!-- 2. 左右分栏布局 -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; margin: 0 auto;">
                     <tr>
-                        <td align="center">
-                            <table cellpadding="0" cellspacing="0" border="0">
+                        <!-- 左栏 30%: 主 Logo -->
+                        <td width="30%" align="left" valign="middle" style="vertical-align: middle; padding-right: 20px;">
+                            {% if main_logo %}
+                            <img src="{{ main_logo }}" alt="Brand Logo" style="display: block; width: 140px; height: auto; border: 0;">
+                            {% endif %}
+                        </td>
+
+                        <!-- 右栏 70%: 子 Logo 网格 -->
+                        <td width="70%" align="left" valign="middle" style="vertical-align: middle;">
+
+                            <!-- 3. 3列×2行 子Logo卡片网格 - 强制等分宽度 -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 380px;">
                                 <tr>
-                                {% for logo in sub_logos %}
-                                <td style="padding:0 8px;">
-                                    <img src="{{ logo }}" alt="Sub Brand" width="160" style="display:block;width:160px;max-width:160px;height:auto;border:0;">
-                                </td>
-                                {% endfor %}
+                                    <!-- 第1行 -->
+                                    {% for logo in sub_logos[:3] %}
+                                    <td width="33.33%" align="center" valign="middle" style="padding: 5px;">
+                                        <!-- 统一白色卡片铁盒子 -->
+                                        <div style="background-color: #FFFFFF; border-radius: 8px; width: 130px; height: 80px; margin: 0 auto; text-align: center; vertical-align: middle; line-height: 80px;">
+                                            <img src="{{ logo }}" alt="Sub Brand" style="max-width: 75%; max-height: 75%; width: auto; height: auto; display: inline-block; vertical-align: middle; border: 0;">
+                                        </div>
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <!-- 第2行 -->
+                                    {% for logo in sub_logos[3:6] %}
+                                    <td width="33.33%" align="center" valign="middle" style="padding: 5px;">
+                                        <!-- 统一白色卡片铁盒子 -->
+                                        <div style="background-color: #FFFFFF; border-radius: 8px; width: 130px; height: 80px; margin: 0 auto; text-align: center; vertical-align: middle; line-height: 80px;">
+                                            <img src="{{ logo }}" alt="Sub Brand" style="max-width: 75%; max-height: 75%; width: auto; height: auto; display: inline-block; vertical-align: middle; border: 0;">
+                                        </div>
+                                    </td>
+                                    {% endfor %}
                                 </tr>
                             </table>
+
                         </td>
                     </tr>
                 </table>
-                {% endif %}
+
+            </td>
+        </tr>
+
+        <!-- 4. 深色通栏底部 -->
+        <tr>
+            <td style="background-color: #0D0D0D; padding: 20px; text-align: center;">
                 {% if reply_to_email or link_website %}
-                <p style="font-size:12px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;margin:0 0 8px 0;">
-                {% if reply_to_email %}<a href="mailto:{{ reply_to_email }}" style="color:#FFFFFF;text-decoration:none;margin:0 16px;opacity:0.7;">CONTACT</a>{% endif %}
-                {% if link_website %}<a href="{{ link_website }}" style="color:#FFFFFF;text-decoration:none;margin:0 16px;opacity:0.7;">WEBSITE</a>{% endif %}
+                <p style="margin: 0;">
+                    {% if reply_to_email %}
+                    <a href="mailto:{{ reply_to_email }}" style="color: #FFFFFF; font-size: 11px; text-decoration: none; letter-spacing: 1.5px; margin: 0 15px;">CONTACT</a>
+                    {% endif %}
+                    {% if link_website %}
+                    <a href="{{ link_website }}" style="color: #FFFFFF; font-size: 11px; text-decoration: none; letter-spacing: 1.5px; margin: 0 15px;">WEBSITE</a>
+                    {% endif %}
                 </p>
                 {% endif %}
+
                 {% if copyright_text %}
-                <p style="font-size:10px;color:#666666;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;margin:24px 0 0 0;">{{ copyright_text }}</p>
+                <p style="color: #666666; font-size: 10px; margin: 10px 0 0 0; font-family: Helvetica, Arial, sans-serif;">
+                    {{ copyright_text }}
+                </p>
                 {% endif %}
             </td>
         </tr>
     </table>
-    
+
+    <!-- 视觉重量平衡指南: 参考 tpl_nordic.html -->
+    </table>
+
 </body>
 </html>
