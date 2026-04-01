@@ -210,9 +210,16 @@
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden" style="height: 80vh;">
             <div class="bg-gray-800 px-6 py-3 flex justify-between items-center">
                 <h3 class="text-white font-semibold">邮件预览</h3>
-                <button type="button" onclick="document.getElementById('previewModal').style.display='none'" class="text-white hover:text-gray-300 text-xl">&times;</button>
+                <div class="flex items-center gap-4">
+                    <!-- 设备切换 -->
+                    <div class="flex bg-gray-700 rounded-lg overflow-hidden">
+                        <button onclick="setPreviewMode('desktop')" id="btnDesktop" class="px-3 py-1 text-sm text-white bg-gray-600 hover:bg-gray-500 transition">🖥️ 电脑端</button>
+                        <button onclick="setPreviewMode('mobile')" id="btnMobile" class="px-3 py-1 text-sm text-gray-300 hover:bg-gray-500 transition">📱 手机端</button>
+                    </div>
+                    <button type="button" onclick="document.getElementById('previewModal').style.display='none'" class="text-white hover:text-gray-300 text-xl">&times;</button>
+                </div>
             </div>
-            <iframe id="previewFrame" class="w-full h-full border-0" sandbox="allow-same-origin"></iframe>
+            <iframe id="previewFrame" class="w-full h-full border-0 transition-all duration-300" sandbox="allow-same-origin"></iframe>
         </div>
     </div>
     
@@ -233,6 +240,35 @@
         function closePreviewModal() {
             document.getElementById('previewModal').classList.add('hidden');
             document.getElementById('previewModal').classList.remove('flex');
+        }
+        
+        // ========== 预览设备切换 ==========
+        let currentPreviewMode = 'desktop';
+        
+        function setPreviewMode(mode) {
+            currentPreviewMode = mode;
+            const frame = document.getElementById('previewFrame');
+            const btnDesktop = document.getElementById('btnDesktop');
+            const btnMobile = document.getElementById('btnMobile');
+            const container = frame.closest('div[class*="max-w"]');
+            
+            if (mode === 'mobile') {
+                // 手机端：窄宽度，居中显示
+                frame.style.width = '375px';
+                container.style.maxWidth = '420px';
+                btnMobile.classList.add('bg-gray-600');
+                btnMobile.classList.remove('text-gray-300');
+                btnDesktop.classList.remove('bg-gray-600');
+                btnDesktop.classList.add('text-gray-300');
+            } else {
+                // 电脑端：全宽
+                frame.style.width = '100%';
+                container.style.maxWidth = '1024px';
+                btnDesktop.classList.add('bg-gray-600');
+                btnDesktop.classList.remove('text-gray-300');
+                btnMobile.classList.remove('bg-gray-600');
+                btnMobile.classList.add('text-gray-300');
+            }
         }
         
         // ========== 页面加载完成后执行 ==========

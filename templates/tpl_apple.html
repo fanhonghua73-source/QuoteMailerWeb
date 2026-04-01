@@ -17,6 +17,74 @@
             .sub-logos-mobile { display: table-row-group !important; }
         }
     </style>
+    <style>
+        /* 桌面端：大屏幕时Logo区域铺满宽度，子Logo间距增加 */
+        @media only screen and (min-width: 1024px) {
+            .footer-inner-table { max-width: 100% !important; width: 100% !important; }
+            .footer-inner-table > tbody > tr > td { padding: 15px 30px !important; }
+            .logo-grid-cell { padding: 10px !important; }
+            .logo-grid-cell div { 
+                width: 200px !important; 
+                height: 120px !important; 
+            }
+        }
+        /* 移动端响应式适配 */
+        @media only screen and (max-width: 600px) {
+            img { max-width: 100% !important; height: auto !important; }
+            .footer-bottom { width: 100% !important; text-align: center !important; padding: 15px !important; }
+            .footer-full-width { width: 100% !important; max-width: 100% !important; }
+            .footer-inner-table { max-width: 100% !important; width: 100% !important; }
+            /* 手机端主Logo加大 */
+            .header-logo { width: 180px !important; }
+            /* 手机端尾页：垂直布局 */
+            .footer-inner-table > tbody > tr { display: block !important; }
+            .footer-inner-table > tbody > tr > td { 
+                display: block !important;
+                width: 100% !important;
+                text-align: center !important;
+                padding: 10px 0 !important;
+                border: none !important;
+            }
+            .footer-inner-table > tbody > tr > td:first-child {
+                padding-bottom: 15px !important;
+            }
+            .footer-inner-table > tbody > tr > td:first-child img {
+                margin: 0 auto !important;
+            }
+            /* 手机端 CONTACT/WEBSITE 链接样式 */
+            .footer-contact-link,
+            .footer-contact-link span,
+            .footer-contact-link:hover,
+            .footer-contact-link:hover span,
+            .footer-contact-link:visited,
+            .footer-contact-link:visited span {
+                color: #FFFFFF !important;
+                text-decoration: none !important;
+            }
+            /* 子Logo：保持比例、居中 */
+            .footer-inner-table table { width: 100% !important; }
+            .logo-grid-cell { 
+                width: 33.33% !important; 
+                padding: 4px !important;
+                text-align: center !important;
+            }
+            .logo-grid-cell div { 
+                margin: 0 auto !important;
+                width: 100% !important; 
+                max-width: 110px !important; 
+                height: 75px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .logo-grid-cell div img {
+                max-width: 70% !important;
+                max-height: 70% !important;
+                width: auto !important;
+                height: auto !important;
+            }
+        }
+    </style>
 </head>
 <body style="margin:0;padding:0;background-color:#FAFAFA;">
     
@@ -167,32 +235,32 @@
     {% endfor %}
     <!-- Footer: 点线面现代布局 -->
     <!-- 1. 整体容器 - 浅灰底色 -->
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F6F8FA;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F6F8FA;" class="footer-full-width">
         <tr>
             <td style="padding: 40px 24px;">
 
                 <!-- 2. 左右分栏布局 -->
-                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; margin: 0 auto;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 100%; margin: 0 auto; width: 100%;" class="footer-inner-table">
                     <tr>
-                        <!-- 左栏 30%: 主 Logo -->
-                        <td width="30%" align="left" valign="middle" style="vertical-align: middle; padding-right: 20px;">
+                        <!-- 左栏 35%: 主 Logo - 居中显示 -->
+                        <td width="35%" align="center" valign="middle" class="stack-column" style="vertical-align: middle; padding: 0 30px;">
                             {% if main_logo %}
-                            <img src="{{ main_logo }}" alt="Brand Logo" style="display: block; width: 140px; height: auto; border: 0;">
+                            <img src="{{ main_logo }}" alt="Brand Logo" class="header-logo" style="display: block; width: 200px; height: auto; border: 0; margin: 0 auto;">
                             {% endif %}
                         </td>
 
-                        <!-- 右栏 70%: 子 Logo 网格 -->
-                        <td width="70%" align="left" valign="middle" style="vertical-align: middle;">
+                        <!-- 右栏 65%: 子 Logo 网格 -->
+                        <td width="65%" align="left" valign="middle" class="stack-column sub-logos-wrapper" style="vertical-align: middle;">
 
                             <!-- 3. 3列×2行 子Logo卡片网格 - 强制等分宽度 -->
-                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 380px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
                                 <tr>
                                     <!-- 第1行 -->
                                     {% for logo in sub_logos[:3] %}
-                                    <td width="33.33%" align="center" valign="middle" style="padding: 5px;">
+                                    <td width="33.33%" align="center" valign="middle" class="logo-grid-cell" style="padding: 15px;">
                                         <!-- 统一白色卡片铁盒子 -->
-                                        <div style="background-color: #FFFFFF; border-radius: 8px; width: 130px; height: 80px; margin: 0 auto; text-align: center; vertical-align: middle; line-height: 80px;">
-                                            <img src="{{ logo }}" alt="Sub Brand" style="max-width: 75%; max-height: 75%; width: auto; height: auto; display: inline-block; vertical-align: middle; border: 0;">
+                                        <div style="background-color: #FFFFFF; border-radius: 10px; width: 200px; height: 120px; margin: 0 auto; text-align: center; vertical-align: middle; line-height: 120px;">
+                                            <img src="{{ logo }}" alt="Sub Brand" style="max-width: 65%; max-height: 65%; width: auto; height: auto; display: inline-block; vertical-align: middle; border: 0;">
                                         </div>
                                     </td>
                                     {% endfor %}
@@ -200,10 +268,10 @@
                                 <tr>
                                     <!-- 第2行 -->
                                     {% for logo in sub_logos[3:6] %}
-                                    <td width="33.33%" align="center" valign="middle" style="padding: 5px;">
+                                    <td width="33.33%" align="center" valign="middle" class="logo-grid-cell" style="padding: 15px;">
                                         <!-- 统一白色卡片铁盒子 -->
-                                        <div style="background-color: #FFFFFF; border-radius: 8px; width: 130px; height: 80px; margin: 0 auto; text-align: center; vertical-align: middle; line-height: 80px;">
-                                            <img src="{{ logo }}" alt="Sub Brand" style="max-width: 75%; max-height: 75%; width: auto; height: auto; display: inline-block; vertical-align: middle; border: 0;">
+                                        <div style="background-color: #FFFFFF; border-radius: 10px; width: 200px; height: 120px; margin: 0 auto; text-align: center; vertical-align: middle; line-height: 120px;">
+                                            <img src="{{ logo }}" alt="Sub Brand" style="max-width: 65%; max-height: 65%; width: auto; height: auto; display: inline-block; vertical-align: middle; border: 0;">
                                         </div>
                                     </td>
                                     {% endfor %}
@@ -221,14 +289,20 @@
         <tr>
             <td style="background-color: #1A1D2D; padding: 20px; text-align: center;">
                 {% if reply_to_email or link_website %}
-                <p style="margin: 0;">
-                    {% if reply_to_email %}
-                    <a href="mailto:{{ reply_to_email }}" style="color: #FFFFFF; font-size: 11px; text-decoration: none; letter-spacing: 1.5px; margin: 0 15px;">CONTACT</a>
-                    {% endif %}
-                    {% if link_website %}
-                    <a href="{{ link_website }}" style="color: #FFFFFF; font-size: 11px; text-decoration: none; letter-spacing: 1.5px; margin: 0 15px;">WEBSITE</a>
-                    {% endif %}
-                </p>
+                <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                    <tr>
+                        {% if reply_to_email %}
+                        <td style="padding: 0 15px;">
+                            <a href="mailto:{{ reply_to_email }}" class="footer-contact-link" style="color: #FFFFFF; text-decoration: none; font-size: 11px; letter-spacing: 1.5px; mso-padding-alt: 0;"><span style="color: #FFFFFF; text-decoration: none;">CONTACT</span></a>
+                        </td>
+                        {% endif %}
+                        {% if link_website %}
+                        <td style="padding: 0 15px;">
+                            <a href="{{ link_website }}" class="footer-contact-link" style="color: #FFFFFF; text-decoration: none; font-size: 11px; letter-spacing: 1.5px;">WEBSITE</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                </table>
                 {% endif %}
 
                 {% if copyright_text %}
