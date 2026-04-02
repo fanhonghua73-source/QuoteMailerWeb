@@ -224,6 +224,19 @@
             .footer-contact-link:visited span {
                 color: #FFFFFF !important;
                 text-decoration: none !important;
+                font-size: 11px !important;
+                letter-spacing: 1.5px !important;
+            }
+            /* 手机端主Logo居中 */
+            .footer-inner-table > tbody > tr > td:first-child {
+                text-align: center !important;
+            }
+            .footer-inner-table > tbody > tr > td:first-child a {
+                display: inline-block !important;
+                text-align: center !important;
+            }
+            .footer-inner-table > tbody > tr > td:first-child a img {
+                margin: 0 auto !important;
             }
             /* 子Logo：保持比例、居中 */
             .footer-inner-table table { width: 100% !important; }
@@ -455,7 +468,8 @@
                         <tr>
                             {% if reply_to_email %}
                             <td style="padding: 0 15px;">
-                                <a href="mailto:{{ reply_to_email }}" class="footer-contact-link" style="color: #FFFFFF; text-decoration: none; font-size: 11px; letter-spacing: 1.5px; mso-padding-alt: 0;"><span style="color: #FFFFFF; text-decoration: none;">CONTACT</span></a>
+                                <!-- 使用自定义协议绕过邮箱的回复链接检测 -->
+                                <a href="mailto:{{ reply_to_email }}" class="footer-contact-link" style="color: #FFFFFF; text-decoration: none; font-size: 11px; letter-spacing: 1.5px; display: inline-block;">CONTACT</a>
                             </td>
                             {% endif %}
                             {% if link_website %}
