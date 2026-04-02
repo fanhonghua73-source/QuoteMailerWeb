@@ -87,15 +87,44 @@ QuoteMailerWeb/
 
 ## 数据格式
 
-### Excel 报价表 (quote.xlsx)
+### Excel 报价表 (quote.xlsx) - 标准格式
 
-| 列名 | 说明 | 示例 |
-|------|------|------|
-| product_name | 产品名称 | T-Shirt |
-| price | 价格 | €29.99 |
-| currency | 货币 | EUR |
-| image | 图片文件名 | product_1.jpg |
-| description | 产品描述 | 纯棉材质 |
+**重要说明**：系统按 Excel 列顺序读取数据，表头自动匹配字段名。标准列顺序如下：
+
+#### 标准列顺序
+| 列序号 | 字段名 | 说明 | 示例 |
+|--------|--------|------|------|
+| 1 | item | 型号/编号 | TS-001 |
+| 2 | name | 产品名称 | Classic T-Shirt |
+| 3 | spec | 规格/描述 | 100% Cotton, S-XXL |
+| 4 | packing | 包装 | 50pcs/carton |
+| 5 | cbm | 体积/材积 | 0.015 |
+| 6 | moq | 起订量 | 500 |
+| 7 | price | 价格 | 29.99 |
+| 8 | currency | 货币 | USD |
+
+#### 支持的表头别名（自动识别）
+| 字段 | 支持的表头名 |
+|------|-------------|
+| item | item, item_no, Item, 品名, 型号 |
+| name | name, product_name, 产品名称, Name, Product Name |
+| spec | spec, specification, 规格, Specification, 型号 |
+| packing | packing, 包装, Packing |
+| cbm | cbm, 体积, CBM, cuft |
+| moq | moq, 最小起订量, MOQ |
+| price | price, price_fob, 单价, 价格, Price, Price FOB |
+| currency | currency, 货币, Currency |
+
+#### Excel 示例
+| item | name | spec | packing | cbm | moq | price | currency |
+|------|------|------|---------|-----|-----|-------|----------|
+| TS-001 | Classic T-Shirt | 100% Cotton, S-XXL | 50pcs/carton | 0.015 | 500 | 29.99 | USD |
+| TS-002 | Graphic T-Shirt | 80% Cotton | 50pcs/carton | 0.018 | 300 | 34.99 | USD |
+
+#### 图片嵌入
+- 直接在 Excel 中嵌入图片（插入 → 图片）
+- 图片将自动提取并绑定到对应行
+- 无需在 Excel 中填写图片列
 
 ### 项目配置 (config.json)
 ```json
